@@ -1,0 +1,14 @@
+config:
+  target: "http://localhost:9009"
+  phases:
+    - duration: 1
+      arrivalRate: 10
+      name: "get tugah harian"
+scenarios:
+  - name: "get tugah harian"
+    flow:
+      - get:
+          url: "/tugas-harian/index-aktifitas-harian"
+          headers:
+            Content-Type: "application/x-www-form-urlencoded"
+            authorization: "Bearer 0f3697d658da444806b60ada4fe2f38e45902f48"
