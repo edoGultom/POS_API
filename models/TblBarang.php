@@ -3,7 +3,6 @@
 namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
-use yii\behaviors\BlameableBehavior;
 use Yii;
 
 /**
@@ -27,7 +26,6 @@ class TblBarang extends \yii\db\ActiveRecord
     {
         return [
             TimestampBehavior::class,
-            BlameableBehavior::class,
         ];
     }
     /**
@@ -36,8 +34,19 @@ class TblBarang extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['nama_barang', 'harga', 'stok'], 'required'],
             [['created_at', 'updated_at', 'id_satuan', 'id_kategori', 'harga', 'stok'], 'integer'],
             [['nama_barang'], 'string', 'max' => 255],
         ];
+    }
+    public function getRequiredAttributes()
+    {
+        $requiredAttributes = [];
+        foreach ($this->getActiveValidators() as $validator) {
+            if ($validator instanceof \yii\validators\RequiredValidator) {
+                $requiredAttributes = array_merge($requiredAttributes, $validator->attributes);
+            }
+        }
+        return $requiredAttributes;
     }
 }
