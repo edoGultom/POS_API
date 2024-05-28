@@ -4,6 +4,8 @@ namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
 use Yii;
+use yii\db\Exception;
+use yii\web\NotFoundHttpException;
 
 /**
  * This is the model class for table "partai".
@@ -31,13 +33,90 @@ class TblBarang extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    public $type;
     public function rules()
     {
         return [
-            [['nama_barang', 'harga', 'stok'], 'required'],
+            [['nama_barang', 'harga', 'stok', 'type'], 'required'],
             [['created_at', 'updated_at', 'id_satuan', 'id_kategori', 'harga', 'stok'], 'integer'],
-            [['nama_barang'], 'string', 'max' => 255],
+            [['nama_barang', 'type'], 'string', 'max' => 255],
+            ['type', 'safe'] //ex. addition/ sale
         ];
+    }
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        if ($insert) {
+            // INSERT
+            $stock = new TblStokBarang();
+            $stock->perubahan_stok = $this->stok;
+            $stock->id_barang = $this->id;
+            $stock->tipe = $this->type;
+            $stock->tanggal = date('Y-m-d');
+            if (!$stock->save()) {
+                throw new Exception('Failed to save the stock: ');
+            }
+        }
+    }
+    public function beforeDelete()
+    {
+
+        $stock =  TblStokBarang::findAll(['id_barang' => $this->id]);
+        if (count($stock) < 1) {
+            throw new NotFoundHttpException('Data Tidak Ditemukan.');
+        }
+        TblStokBarang::deleteAll(['id_barang' => $this->id]);
+        // Call the parent implementation (optional)
+        return parent::beforeDelete();
+    }
+    public function getNewStok()
+    {
+        //UPDATE
+        $stockExists = TblStokBarang::findOne(['id_barang' => $this->id]);
+        if (!$stockExists) {
+            throw new NotFoundHttpException('Data Tidak Ditemukan.');
+        }
+        $model = new TblStokBarang();
+        $model->id_barang = $this->id;
+        $model->tipe = $this->type;
+        $model->tanggal = date('Y-m-d');
+
+        $resultStok = 0;
+        if ($this->type === 'addition') {
+            $resultStok = $stockExists->perubahan_stok + $this->stok;
+        } else if ($this->type === 'sale') {
+            if ($stockExists->perubahan_stok <= $this->stok) {
+                throw new NotFoundHttpException('Stock Tidak Cukup. minimal 1 stok tersedia');
+            }
+            $resultStok = $stockExists->perubahan_stok - $this->stok;
+        }
+        $model->perubahan_stok = $this->stok;
+        if (!$model->save()) {
+            throw new Exception('Failed to save the stock: ');
+        }
+        return $resultStok;
+    }
+    public function getSatuan()
+    {
+        return $this->hasOne(TblSatuanBarang::class, ['id' => 'id_satuan'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getKategori()
+    {
+        return $this->hasOne(TblKategoriBarang::class, ['id' => 'id_kategori'])->orderBy(['id' => SORT_DESC]);
+    }
+
+    public function fields()
+    {
+        $fields = parent::fields();
+        // Add extra field
+        $fields['nama_satuan']  = function ($model) {
+            return $this->satuan->nama_satuan ?? '';
+        };
+        $fields['nama_kategori']  = function ($model) {
+            return $this->kategori->nama_kategori ?? '';
+        };
+        return $fields;
     }
     public function getRequiredAttributes()
     {

@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblBarang;
+use app\models\TblPelanggan;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -14,7 +14,7 @@ use filsh\yii2\oauth2server\filters\auth\CompositeAuth;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 
-class BarangController extends Controller
+class PelangganController extends Controller
 {
     public $pesan = '';
     public $data = '';
@@ -51,7 +51,7 @@ class BarangController extends Controller
     }
     protected function findModel($id)
     {
-        $model = TblBarang::findOne($id);
+        $model = TblPelanggan::findOne($id);
         if ($model !== null) {
             return $model;
         }
@@ -59,7 +59,7 @@ class BarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblBarang::find()->all();
+        $model = TblPelanggan::find()->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -71,11 +71,11 @@ class BarangController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $barang = $this->findAllModel();
-            if ($barang) {
+            $model = $this->findAllModel();
+            if ($model) {
                 $transaction->commit();
                 $res['status'] = true;
-                $res['data'] = $barang;
+                $res['data'] = $model;
                 $res['message'] = 'Berhasil mengambil data!';
             }
         } catch (\Exception $e) {
@@ -87,10 +87,6 @@ class BarangController extends Controller
         }
         return $res;
     }
-    public function actionDetail($id)
-    {
-        return 'Example!';
-    }
     public function actionAdd()
     {
         $request = Yii::$app->request;
@@ -99,18 +95,18 @@ class BarangController extends Controller
         $transaction = $connection->beginTransaction();
 
         try {
-            $barang = new TblBarang();
+            $model = new TblPelanggan();
             $data = $request->bodyParams; // Get the body of the request
-            $barang->load($data, '');
-            if ($barang->validate() &&  $barang->save()) {
+            $model->load($data, '');
+            if ($model->validate() &&  $model->save()) {
                 $transaction->commit();
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menambah data!';
             } else {
                 return [
                     'status' => false,
-                    // 'message' => $barang->getRequiredAttributes()
-                    'message' => $barang->getErrors(),
+                    // 'message' => $model->getRequiredAttributes()
+                    'message' => $model->getErrors(),
                 ];
             }
         } catch (\Exception $e) {
@@ -129,20 +125,18 @@ class BarangController extends Controller
         $transaction = $connection->beginTransaction();
         $data =  Yii::$app->request->getBodyParams();
         try {
-            $barang =  $this->findModel($id);
-            if ($barang) {
-                $barang->setAttributes($data); // Set the attributes manually
-                $barang->stok = $barang->getNewStok();
-                // return $barang;
-                if ($barang->validate() && $barang->save()) {
+            $model =  $this->findModel($id);
+            if ($model) {
+                $model->setAttributes($data, ''); // Set the attributes manually
+                if ($model->validate() &&  $model->save()) {
                     $transaction->commit();
                     $res['status'] = true;
                     $res['message'] = 'Berhasil merubah data!';
                 } else {
                     return [
                         'status' => false,
-                        'message' => $barang->getErrors(),
-                        // 'message' => $barang->getRequiredAttributes()
+                        'message' => $model->getErrors(),
+                        // 'message' => $model->getRequiredAttributes()
                     ];
                 }
             }
@@ -160,8 +154,8 @@ class BarangController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $barang =  $this->findModel($id);
-            if ($barang->delete()) {
+            $model =  $this->findModel($id);
+            if ($model->delete()) {
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menghapus data!';
                 $transaction->commit();

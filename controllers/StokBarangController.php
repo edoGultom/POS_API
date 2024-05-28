@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblBarang;
+use app\models\TblStokBarang;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -14,7 +14,7 @@ use filsh\yii2\oauth2server\filters\auth\CompositeAuth;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 
-class BarangController extends Controller
+class StokBarangController extends Controller
 {
     public $pesan = '';
     public $data = '';
@@ -51,7 +51,7 @@ class BarangController extends Controller
     }
     protected function findModel($id)
     {
-        $model = TblBarang::findOne($id);
+        $model = TblStokBarang::findOne($id);
         if ($model !== null) {
             return $model;
         }
@@ -59,7 +59,7 @@ class BarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblBarang::find()->all();
+        $model = TblStokBarang::find()->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -99,7 +99,7 @@ class BarangController extends Controller
         $transaction = $connection->beginTransaction();
 
         try {
-            $barang = new TblBarang();
+            $barang = new TblStokBarang();
             $data = $request->bodyParams; // Get the body of the request
             $barang->load($data, '');
             if ($barang->validate() &&  $barang->save()) {
@@ -131,10 +131,8 @@ class BarangController extends Controller
         try {
             $barang =  $this->findModel($id);
             if ($barang) {
-                $barang->setAttributes($data); // Set the attributes manually
-                $barang->stok = $barang->getNewStok();
-                // return $barang;
-                if ($barang->validate() && $barang->save()) {
+                $barang->setAttributes($data, ''); // Set the attributes manually
+                if ($barang->validate() &&  $barang->save()) {
                     $transaction->commit();
                     $res['status'] = true;
                     $res['message'] = 'Berhasil merubah data!';

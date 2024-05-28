@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use yii\behaviors\TimestampBehavior;
 use Yii;
 
 /**
@@ -12,7 +13,7 @@ use Yii;
  * @property string|null $nama_partai
  * @property string|null $keterangan
  */
-class TblPenjualanBarang extends \yii\db\ActiveRecord
+class TblStokBarang extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -21,14 +22,19 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
     {
         return 'tbl_stok_barang';
     }
-
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+        ];
+    }
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id_penjualan', 'id_barang', 'perubahan_stok', 'created_at', 'updated_at'], 'integer'],
+            [['id_barang', 'perubahan_stok', 'created_at', 'updated_at'], 'integer'],
             [['tipe'], 'string', 'max' => 100],
             [['tanggal'], 'safe'],
         ];

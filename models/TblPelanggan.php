@@ -3,7 +3,6 @@
 namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
-use yii\behaviors\BlameableBehavior;
 use Yii;
 
 /**
@@ -27,7 +26,6 @@ class TblPelanggan extends \yii\db\ActiveRecord
     {
         return [
             TimestampBehavior::class,
-            BlameableBehavior::class,
         ];
     }
     /**

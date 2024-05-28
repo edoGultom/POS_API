@@ -3,7 +3,6 @@
 namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
-use yii\behaviors\BlameableBehavior;
 use Yii;
 
 /**
@@ -26,8 +25,7 @@ class TblKategoriBarang extends \yii\db\ActiveRecord
     public function behaviors()
     {
         return [
-            TimestampBehavior::class,
-            BlameableBehavior::class,
+            TimestampBehavior::class
         ];
     }
     /**
