@@ -34,21 +34,24 @@ class UserController extends \yii\rest\Controller
         ]);
     }
 
-    public function actionLoginUser()
+    public function actionLogin()
     {
         $response = Yii::$app->getModule('oauth2')->getServer()->handleTokenRequest();
         $result = $response->getParameters();
+
         $data = [];
         if (isset($result['access_token'])) {
             $model = OauthAccessTokens::find()->where(['access_token' => $result['access_token']])->one();
-            $user = User::find()->where(['id' => $model->user_id])->one();
 
+            $query = (new \yii\db\Query());
+            $query->select('*')
+                ->from('user')
+                ->where(['=', 'id',  strtolower($model->user_id)])->one();
+            $command = $query->createCommand();
+            $user = $command->queryOne();
 
-            $data['user_id'] = $model->user_id;
-            $data['email'] = $user->email;
-            $data['username'] = $user->username;
+            $data['user'] = $user;
 
-            $data['foto'] = 0;
             $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $model->user_id])->asArray()->all();
             $data['expires'] = strtotime($model->expires);
             $data['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
@@ -56,8 +59,10 @@ class UserController extends \yii\rest\Controller
             });
 
             $data['access_token'] = $result['access_token'];
+            $data['token_type'] = $result['token_type'];
             $data['refresh_token'] = $result['refresh_token'];
-            $model->scope = implode(" ", $data['scope']);
+            $model->expires = Yii::$app->formatter->asDate($data['expires'], 'php: Y-m-d H:i:s');
+            $model->setAttribute('scope', implode(" ", $data['scope']));
             $model->save();
             return $data;
         }
@@ -75,7 +80,6 @@ class UserController extends \yii\rest\Controller
             $model = OauthAccessTokens::find()->where(['access_token' => $result['access_token']])->one();
             $user = User::find()->where(['id' => $model->user_id])->one();
             $data['user_id'] = $model->user_id;
-            $data['pin'] = $user->pin;
 
             $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $model->user_id])->asArray()->all();
             $data['expires'] = strtotime($model->expires);
@@ -96,7 +100,8 @@ class UserController extends \yii\rest\Controller
     {
         $post = Yii::$app->request->post();
         $connection = Yii::$app->db;
-        $model = User::find()->where(['username' => $post['username']])->orWhere(['email' => $post['email']])->one();
+
+        $model = User::find()->where(['username' => $post['name']])->orWhere(['email' => $post['email']])->one();
         if ($model) {
             return [
                 'status' =>  $this->status,
@@ -106,58 +111,58 @@ class UserController extends \yii\rest\Controller
         }
         $transaction = $connection->beginTransaction();
         $user = new User();
-
+        $result = [];
         try {
             $user->auth_key = Yii::$app->security->generateRandomString();
             $user->username = $post['username'];
+            $user->name = $post['name'];
 
             $user->email = $post['email'];
             $user->setPassword($post['password']);
             $user->generateAuthKey();
             $user->generateEmailVerificationToken();
-            $user->status = 9;
+            $user->status = 10;
+            $user->kelurahan = $post['kelurahan'];
+            $user->phone_number = $post['phone_number'];
+            $user->address = $post['address'];
+            // $user->status = 9;
             $user->created_at = time();
             $user->updated_at = time();
-            $user->save(false);
             // $user->sendEmail($user);
 
-            $connection->createCommand()->batchInsert('auth_assignment', [
-                'user_id',
-                'item_name',
-                'created_at'
-            ], [
-                [$user->id, 'admin', time()],
-            ])->execute();
+            if ($user->validate() && $user->save()) {
+                // $data['status'] = true;
+                // $data['pesan'] = 'Register Berhasil';
+                $connection->createCommand()->batchInsert('auth_assignment', [
+                    'user_id',
+                    'item_name',
+                    'created_at'
+                ], [
+                    [$user->id, 'User', time()],
+                ])->execute();
+                $transaction->commit();
+                $query = (new \yii\db\Query());
+                $query->select('*')
+                    ->from('user')
+                    ->where(['like', 'lower(username)',  strtolower($user->username)])->one();
+                $command = $query->createCommand();
+                $data = $command->queryOne();
 
-            $transaction->commit();
-            $this->status = true;
-            $this->pesan = 'Register Berhasil';
+                $this->data = $data;
+                $this->status = true;
+                $this->pesan = 'register berhasil';
+            } else {
+                $this->status = false;
+                $this->pesan = $user->getErrors();
+            }
         } catch (\Exception $e) {
             $transaction->rollBack();
-            return $e->getMessage();
+            $this->pesan =  $e->getMessage();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-            return $e->getMessage();
+            $this->pesan =  $e->getMessage();
         }
 
-        return [
-            'status' =>  $this->status,
-            'data' => $this->data,
-            'pesan' => $this->pesan
-        ];
-    }
-
-    public function actionRequestPasswordReset()
-    {
-        $model = new PasswordResetRequestForm();
-        $post = Yii::$app->request->post();
-        $model->email = $post['email'];
-        if ($model->sendEmail()) {
-            $this->status = true;
-            $this->pesan = 'Berhasil, silahkan cek email anda';
-        } else {
-            $this->pesan = 'Gagal, silahkan coba beberapa saat lagi';
-        }
         return [
             'status' =>  $this->status,
             'data' => $this->data,
