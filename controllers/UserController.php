@@ -51,18 +51,21 @@ class UserController extends \yii\rest\Controller
             $user = $command->queryOne();
 
             $data['user'] = $user;
-
             $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $model->user_id])->asArray()->all();
-            $data['expires'] = strtotime($model->expires);
-            $data['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
+            $data['user']['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
                 return str_replace(" ", "_", $m['item_name']);
             });
+
+            $data['expires'] = strtotime($model->expires);
+            // $data['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
+            //     return str_replace(" ", "_", $m['item_name']);
+            // });
 
             $data['access_token'] = $result['access_token'];
             $data['token_type'] = $result['token_type'];
             $data['refresh_token'] = $result['refresh_token'];
             $model->expires = Yii::$app->formatter->asDate($data['expires'], 'php: Y-m-d H:i:s');
-            $model->setAttribute('scope', implode(" ", $data['scope']));
+            $model->setAttribute('scope', implode(" ", $data['user']['scope']));
             $model->save();
             return $data;
         }
