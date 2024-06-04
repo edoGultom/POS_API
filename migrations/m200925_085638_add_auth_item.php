@@ -14,51 +14,51 @@ class m200925_085638_add_auth_item extends Migration
     {
         $this->batchInsert(
             'auth_item',
-            [   
-                'name', 
-                'type', 
-                'description', 
-                'rule_name', 
-                'data', 
-                'created_at', 
+            [
+                'name',
+                'type',
+                'description',
+                'rule_name',
+                'data',
+                'created_at',
                 'updated_at'
-            ], 
+            ],
             [
                 [
                     '/*', 2, NULL, NULL, NULL, time(), time()
                 ],
                 [
-                    'admin', 1, NULL, NULL, NULL, time(), time()
+                    'Admin', 1, NULL, NULL, NULL, time(), time()
                 ],
             ]
         );
 
         $this->batchInsert(
             'auth_item_child',
-            [   
-                'parent', 
+            [
+                'parent',
                 'child',
-            ], 
+            ],
             [
                 [
-                    'admin', '/*'
+                    'Admin', '/*'
                 ],
             ]
-        ); 
+        );
 
         $this->batchInsert(
             'auth_assignment',
-            [   
-                'item_name', 
+            [
+                'item_name',
                 'user_id',
-                'created_at', 
-            ], 
+                'created_at',
+            ],
             [
                 [
-                    'admin', '1', time()
+                    'Admin', '1', time()
                 ],
             ]
-            
+
         );
     }
 

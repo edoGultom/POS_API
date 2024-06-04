@@ -95,13 +95,15 @@ class UserController extends \yii\rest\Controller
         }
         return false;
     }
-
+    public function actionTest()
+    {
+        return 'a';
+    }
     public function actionRegister()
     {
         $post = Yii::$app->request->post();
         $connection = Yii::$app->db;
-
-        $model = User::find()->where(['username' => $post['name']])->orWhere(['email' => $post['email']])->one();
+        $model = User::find()->where(['username' => $post['username']])->orWhere(['email' => $post['email']])->one();
         if ($model) {
             return [
                 'status' =>  $this->status,
@@ -109,6 +111,7 @@ class UserController extends \yii\rest\Controller
                 'pesan' => 'Username atau email sudah digunakan, silahkan gunakan usarname atau email yang lain'
             ];
         }
+
         $transaction = $connection->beginTransaction();
         $user = new User();
         $result = [];
@@ -122,17 +125,11 @@ class UserController extends \yii\rest\Controller
             $user->generateAuthKey();
             $user->generateEmailVerificationToken();
             $user->status = 10;
-            $user->kelurahan = $post['kelurahan'];
-            $user->phone_number = $post['phone_number'];
             $user->address = $post['address'];
-            // $user->status = 9;
             $user->created_at = time();
             $user->updated_at = time();
-            // $user->sendEmail($user);
 
             if ($user->validate() && $user->save()) {
-                // $data['status'] = true;
-                // $data['pesan'] = 'Register Berhasil';
                 $connection->createCommand()->batchInsert('auth_assignment', [
                     'user_id',
                     'item_name',
@@ -152,6 +149,7 @@ class UserController extends \yii\rest\Controller
                 $this->status = true;
                 $this->pesan = 'register berhasil';
             } else {
+                return 'a';
                 $this->status = false;
                 $this->pesan = $user->getErrors();
             }
