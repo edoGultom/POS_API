@@ -76,16 +76,14 @@ class UploadForm extends Model
                 foreach ($this->imageFilesMenu as  $value) {
                     $no++;
                     $ext = pathinfo($value->name, PATHINFO_EXTENSION);
-                    $nameFile =  'Menu_' . $id . '_file' . $no . '.' . $ext;
+                    $nameFile =  'Menu_' . $id . '_file' . time() . '.' . $ext;
                     $value->saveAs('@temp/' . $nameFile);
 
-                    $newNameFile =   'Menu_' . $id . '_file' . $no . '_compressed.' . $ext;
+                    $newNameFile =   'Menu_' . $id . '_file' . time() . '_compressed.' . $ext;
                     $newPath = Yii::getAlias('@files/' . $newNameFile);
-
                     $fileDb = new UploadedFiledb();
                     $fileDb->name = $value->name;
                     $fileDb->size = $value->size;
-                    // $fileDb->filename = $newPath;
                     $fileDb->filename = 'files/' . $newNameFile;
                     $fileDb->type = $value->type;
                     if (!$fileDb->validate()) {

@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\TblBarang;
+use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -45,7 +46,7 @@ class BarangController extends Controller
                 'actions' => [
                     'index'  => ['GET'],
                     'add'  => ['POST'],
-                    'update'  => ['PUT'],
+                    'update'  => ['POST'],
                     'delete'  => ['DELETE'],
                 ],
             ],
@@ -143,18 +144,36 @@ class BarangController extends Controller
     {
         $res = [];
         $connection = Yii::$app->db;
+        $request = Yii::$app->request;
         $transaction = $connection->beginTransaction();
         $data =  Yii::$app->request->getBodyParams();
+        $files = UploadedFile::getInstancesByName("file");
         try {
             $barang =  $this->findModel($id);
             if ($barang) {
                 $barang->setAttributes($data); // Set the attributes manually
                 $barang->stok = $barang->getNewStok();
-                // return $barang;
+                $data = $request->bodyParams; // Get the body of the request
+
                 if ($barang->validate() && $barang->save()) {
-                    $transaction->commit();
-                    $res['status'] = true;
-                    $res['message'] = 'Berhasil merubah data!';
+                    if (!empty($files)) {
+                        UploadedFiledb::find()->where(['filename' =>  $barang->path])->one()->delete();
+                        unlink(Yii::getAlias('@' . $barang->path));
+                        $upload = new UploadForm();
+                        $upload->imageFilesMenu = $files;
+                        $resp = $upload->uploadFileMenu($barang->id, $barang->type);
+                        if (!$resp) {
+                            $this->status = false;
+                            $this->pesan = $resp;
+                        }
+                        $transaction->commit();
+                        $res['status'] = true;
+                        $res['message'] = 'Berhasil merubah data!';
+                        $res['data'] = $this->findModel($id);
+                    } else {
+                        $res['status'] = false;
+                        $res['pesan'] = 'file kosong!';
+                    }
                 } else {
                     return [
                         'status' => false,
