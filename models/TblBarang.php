@@ -40,6 +40,7 @@ class TblBarang extends \yii\db\ActiveRecord
             [['nama_barang', 'harga', 'stok', 'type'], 'required'],
             [['created_at', 'updated_at', 'id_satuan', 'id_kategori', 'harga', 'stok'], 'integer'],
             [['nama_barang', 'type'], 'string', 'max' => 255],
+            ['path', 'string'],
             ['type', 'safe'] //ex. addition/ sale
         ];
     }

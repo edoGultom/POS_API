@@ -19,6 +19,7 @@ class m240520_162422_create_tbl_barang_table extends Migration
             'id_kategori' => $this->integer(),
             'harga' => $this->integer(),
             'stok' => $this->integer(),
+            'path' => $this->text(),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),
         ]);
