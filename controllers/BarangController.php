@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\TblBarang;
+use app\models\UploadForm;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -13,6 +14,7 @@ use filsh\yii2\oauth2server\filters\ErrorToExceptionFilter;
 use filsh\yii2\oauth2server\filters\auth\CompositeAuth;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
+use yii\web\UploadedFile;
 
 class BarangController extends Controller
 {
@@ -97,15 +99,31 @@ class BarangController extends Controller
         $res = [];
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
+        $files = UploadedFile::getInstancesByName("file");
 
         try {
             $barang = new TblBarang();
             $data = $request->bodyParams; // Get the body of the request
             $barang->load($data, '');
             if ($barang->validate() &&  $barang->save()) {
-                $transaction->commit();
-                $res['status'] = true;
-                $res['message'] = 'Berhasil menambah data!';
+                if (!empty($files)) {
+
+                    $upload = new UploadForm();
+                    $upload->imageFilesMenu = $files;
+                    $resp = $upload->uploadFileMenu($barang->id, $barang->type);
+                    if (!$resp) {
+                        $this->status = false;
+                        $this->pesan = $resp;
+                    }
+                    $transaction->commit();
+                    $res['status'] = true;
+                    $res['message'] = 'Berhasil menambah datsa!';
+
+                    $this->data = $barang;
+                } else {
+                    $this->status = false;
+                    $this->pesan = 'file kosong!';
+                }
             } else {
                 return [
                     'status' => false,

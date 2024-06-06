@@ -17,12 +17,12 @@ class UploadForm extends Model
      * @var UploadedFile
      */
     public $imageFile;
-    public $imageFilesPengaduan;
+    public $imageFilesMenu;
 
     public function rules()
     {
         return [
-            [['imageFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg'],
+            [['imageFile', 'imageFilesMenu'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg'],
         ];
     }
 
@@ -61,6 +61,61 @@ class UploadForm extends Model
         } else {
             return $this->getErrors();
             return false;
+        }
+    }
+    public function uploadFileMenu($id, $type)
+    {
+        if (!empty($this->imageFilesMenu)) {
+            // return $this->imageFilesMenu;
+            $connection = Yii::$app->db;
+            $transaction = $connection->beginTransaction();
+            try {
+                $no = 0;
+                // return $this->imageFilesMenu;
+                $arrIdFile = [];
+                foreach ($this->imageFilesMenu as  $value) {
+                    $no++;
+                    $ext = pathinfo($value->name, PATHINFO_EXTENSION);
+                    $nameFile =  'Menu_' . $id . '_file' . $no . '.' . $ext;
+                    $value->saveAs('@temp/' . $nameFile);
+
+                    $newNameFile =   'Menu_' . $id . '_file' . $no . '_compressed.' . $ext;
+                    $newPath = Yii::getAlias('@files/' . $newNameFile);
+
+                    $fileDb = new UploadedFiledb();
+                    $fileDb->name = $value->name;
+                    $fileDb->size = $value->size;
+                    $fileDb->filename = $newPath;
+                    $fileDb->type = $value->type;
+                    if (!$fileDb->validate()) {
+                        return $fileDb->getErrors();
+                    }
+                    if ($fileDb->save()) {
+                        Image::getImagine()->open(Yii::getAlias('@temp/') . $nameFile)
+                            ->thumbnail(new Box(800, 800))
+                            ->save($newPath, ['quality' => 100]);
+                        unlink(Yii::getAlias('@temp/') . $nameFile);
+                        $value->saveAs($newPath);
+                        array_push($arrIdFile, $fileDb->filename);
+                    }
+                }
+                $pengaduan = TblBarang::findOne(['id' => $id]);
+                $pengaduan->path =  implode(', ', $arrIdFile);
+                $pengaduan->type =  $type;
+                if ($pengaduan->save()) {
+                    $transaction->commit();
+                    return true;
+                }
+                return  $pengaduan->getErrors();
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                return $e->getMessage();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+                return $e->getMessage();
+            }
+        } else {
+            return $this->getErrors();
         }
     }
 }
