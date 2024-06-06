@@ -85,7 +85,8 @@ class UploadForm extends Model
                     $fileDb = new UploadedFiledb();
                     $fileDb->name = $value->name;
                     $fileDb->size = $value->size;
-                    $fileDb->filename = $newPath;
+                    // $fileDb->filename = $newPath;
+                    $fileDb->filename = 'files/' . $newNameFile;
                     $fileDb->type = $value->type;
                     if (!$fileDb->validate()) {
                         return $fileDb->getErrors();

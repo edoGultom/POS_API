@@ -118,11 +118,10 @@ class BarangController extends Controller
                     $transaction->commit();
                     $res['status'] = true;
                     $res['message'] = 'Berhasil menambah datsa!';
-
-                    $this->data = $barang;
+                    $res['data'] = $barang;
                 } else {
-                    $this->status = false;
-                    $this->pesan = 'file kosong!';
+                    $res['status'] = false;
+                    $res['pesan'] = 'file kosong!';
                 }
             } else {
                 return [
@@ -182,6 +181,7 @@ class BarangController extends Controller
             if ($barang->delete()) {
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menghapus data!';
+                $res['data'] = $this->findAllModel();
                 $transaction->commit();
             }
         } catch (\Exception $e) {
