@@ -197,10 +197,12 @@ class BarangController extends Controller
         $transaction = $connection->beginTransaction();
         try {
             $barang =  $this->findModel($id);
+            UploadedFiledb::find()->where(['filename' =>  $barang->path])->one()->delete();
+            unlink(Yii::getAlias('@' . $barang->path));
             if ($barang->delete()) {
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menghapus data!';
-                $res['data'] = $this->findAllModel();
+                // $res['data'] =  $this->findModel($id);
                 $transaction->commit();
             }
         } catch (\Exception $e) {
