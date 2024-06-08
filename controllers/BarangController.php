@@ -119,7 +119,7 @@ class BarangController extends Controller
                     $transaction->commit();
                     $res['status'] = true;
                     $res['message'] = 'Berhasil menambah datsa!';
-                    $res['data'] = $barang;
+                    $res['data'] =  $this->findModel($barang->id);
                 } else {
                     $res['status'] = false;
                     $res['pesan'] = 'file kosong!';
@@ -166,14 +166,14 @@ class BarangController extends Controller
                             $this->status = false;
                             $this->pesan = $resp;
                         }
-                        $transaction->commit();
-                        $res['status'] = true;
-                        $res['message'] = 'Berhasil merubah data!';
-                        $res['data'] = $this->findModel($id);
                     } else {
                         $res['status'] = false;
                         $res['pesan'] = 'file kosong!';
                     }
+                    $transaction->commit();
+                    $res['status'] = true;
+                    $res['message'] = 'Berhasil merubah data!';
+                    $res['data'] = $this->findModel($id);
                 } else {
                     return [
                         'status' => false,
