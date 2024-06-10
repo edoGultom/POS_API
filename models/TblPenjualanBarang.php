@@ -31,4 +31,8 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
             [['id_penjualan', 'id_barang', 'qty', 'harga', 'total'], 'integer'],
         ];
     }
+    public function getBarang()
+    {
+        return $this->hasOnne(TblBarang::class, ['id' => 'id_barang']);
+    }
 }

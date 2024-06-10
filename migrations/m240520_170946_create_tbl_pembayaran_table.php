@@ -20,7 +20,7 @@ class m240520_170946_create_tbl_pembayaran_table extends Migration
             'jumlah' => $this->integer(),
             'tanggal_pembayaran' => $this->dateTime(),
             'payment_status' => $this->string(100), //Completed, Failed
-            'id_transaksi' => $this->integer(), //ID Transaksi dari Payment Gateway
+            'id_transaksi' => $this->text(), //ID Transaksi dari Payment Gateway
         ]);
     }
 

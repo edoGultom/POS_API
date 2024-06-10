@@ -1,6 +1,6 @@
 <?php
 
-namespace common\components;
+namespace app\components;
 
 use Midtrans\Notification;
 use Midtrans\Transaction;
@@ -35,34 +35,24 @@ class MidtransNotification extends Component
         ];
     }
 
-    private function generateItemDetails($tblPayment)
+    private function generateItemDetails($model)
     {
-        // $itemDetails = [
-        //     'id' => '1',
-        //     'price' => 20000,
-        //     'quantity' => 1,
-        //     'name' => 'tes',
-        // ];
-
-        // return $itemDetails;
-
         $itemDetails = [];
-        foreach ($tblPayment as $mailService) {
-            $mailServiceDetail = $mailService->mailServiceDetail;
+        foreach ($model->getPenjualanBarang()->all() as $val) {
             $itemDetails[] = [
-                'id' => $mailServiceDetail->id,
-                'price' => $mailServiceDetail->total,
-                'quantity' => 1,
-                'name' => $mailService->request_number,
+                'id' => $val->id,
+                'price' => $val->harga,
+                'quantity' => $val->qty,
+                'name' => $val->barang->nama_barang ?? '-',
             ];
         }
 
         return $itemDetails;
     }
 
-    public function checkout($payments)
+    public function checkout($TblPenjualan)
     {
-        $itemDetails = $this->generateItemDetails($payments);
+        $itemDetails = $this->generateItemDetails($TblPenjualan);
         $customerDetails = $this->generateCustomerDetails();
 
         \Midtrans\Config::$isProduction = $this->isProduction;
@@ -70,10 +60,8 @@ class MidtransNotification extends Component
 
         $params = array(
             'transaction_details' => array(
-                // 'order_id' => $payments->invoice_no,
-                // 'gross_amount' => $payments->total,
-                'order_id' => 'NO001',
-                'gross_amount' => 20000,
+                'order_id' => $TblPenjualan->id,
+                'gross_amount' => $TblPenjualan->total_transaksi,
             ),
             'payment_type' => 'qris',
             'item_details' => $itemDetails,
