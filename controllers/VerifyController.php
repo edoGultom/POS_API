@@ -7,6 +7,8 @@ use app\models\TblPenjualan;
 use yii\rest\Controller;
 use yii\web\Response;
 use Yii;
+use yii\base\Exception;
+use yii\web\NotFoundHttpException;
 
 class VerifyController extends Controller
 {
@@ -36,8 +38,10 @@ class VerifyController extends Controller
         if ($body['transaction_status'] == 'settlement') {
             $status = 'PAID';
             $satle =  $body['settlement_time'];
-        } else  if ($body['transaction_status'] == 'expired') {
+        } else if ($body['transaction_status'] == 'expired') {
             $status = 'EXPIRED';
+        } else if ($body['transaction_status'] == 'cancel') {
+            $status = 'CANCELED';
         }
         TblPenjualan::updateAll([
             'status_pembayaran' => $status,
@@ -51,5 +55,39 @@ class VerifyController extends Controller
             'status' => true,
             'message' => 'Success Update Payment'
         ];
+    }
+    protected function findModel($id)
+    {
+        $model = TblPembayaran::findOne($id);
+        if ($model !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    public function actionIsfinish($orderId)
+    {
+        $request = Yii::$app->request;
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        $pembayaran = TblPembayaran::findOne(['id_penjualan' => $orderId]);
+        try {
+            if ($pembayaran) {
+                return [
+                    'status' => true,
+                    'message' => $pembayaran->payment_status,
+                ];
+            } else {
+                return [
+                    'status' => false,
+                    'message' => "Not Found",
+                ];
+            }
+            $transaction->commit();
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => "Exception occurred while saving model for with error: " . $e->getMessage(),
+            ];
+        }
     }
 }

@@ -176,40 +176,31 @@ class PembayaranController extends Controller
                 ];
             }
         }
-        // if (!$model->save()) {
-        //     return [
-        //         'status' => false,
-        //         'message' => "Failed Saved!",
-        //     ];
-        // }
-        // return
-        // $res = [];
-        // $connection = Yii::$app->db;
-        // $transaction = $connection->beginTransaction();
-
-        // try {
-        //     $model = new TblPembayaran();
-        //     $data = $request->bodyParams; // Get the body of the request
-        //     $model->load($data, '');
-        //     if ($model->validate() &&  $model->save()) {
-        //         $transaction->commit();
-        //         $res['status'] = true;
-        //         $res['message'] = 'Berhasil menambah data!';
-        //     } else {
-        //         return [
-        //             'status' => false,
-        //             // 'message' => $model->getRequiredAttributes()
-        //             'message' => $model->getErrors(),
-        //         ];
-        //     }
-        // } catch (\Exception $e) {
-        //     $transaction->rollBack();
-        //     return [
-        //         'status' => false,
-        //         'message' => $e->getMessage(),
-        //     ];
-        // }
-        // return $res;
+    }
+    public function actionCancel()
+    {
+        $request = Yii::$app->request;
+        $body = $request->bodyParams; // Get the body of the request
+        $orderId = $body['order_id'];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        $midtransResp = Yii::$app->midtrans->cancel($orderId);
+        try {
+            if ($midtransResp->status_code == '200') {
+                $transaction->commit();
+                return [
+                    'status' => true,
+                    'message' => "Berhasil membatalkan",
+                    'data' => $midtransResp
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => "Exception occurred while saving model for with error: " . $e->getMessage(),
+            ];
+        }
+        //    PEMMBAYARAN MIDTRANS
     }
     public function actionUpdate($id)
     {
