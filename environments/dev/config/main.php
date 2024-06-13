@@ -8,7 +8,7 @@ $config = [
     'basePath' => dirname(__DIR__),
     'aliases' => [
         '@temp' => __DIR__ . '/../temp',
-        '@uploads' => __DIR__ . '/../uploads',
+        '@files' => __DIR__ . '/../files',
     ],
     'controllerNamespace' => 'app\controllers',
     'modules' => [
