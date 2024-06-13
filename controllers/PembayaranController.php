@@ -139,24 +139,40 @@ class PembayaranController extends Controller
             ];
         }
         $this->savePenjualan($data, $model->id);
-        //    PEMMBAYARAN MIDTRANS
-        $midtransResp = Yii::$app->midtrans->checkout($model);
-        // return $midtransResp;
-        // END PEMBAYARA MIDTRANS
-        if ($midtransResp->status_code == '201') {
-            $connection = Yii::$app->db;
-            $transaction = $connection->beginTransaction();
-            try {
-                $pembayaran = new TblPembayaran();
-                $pembayaran->id_penjualan = $model->id;
-                $pembayaran->payment_method = strtoupper($metode_pembayaran);
-                if ($metode_pembayaran === 'qris') {
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            //    PEMMBAYARAN MIDTRANS
+            $pembayaran = new TblPembayaran();
+            $pembayaran->id_penjualan = $model->id;
+            $pembayaran->payment_method = strtoupper($metode_pembayaran);
+            $pembayaran->jumlah = $totalBayar;
+            $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
+            $pembayaran->payment_status = $status;
+            if ($metode_pembayaran === 'qris') {
+                $midtransResp = Yii::$app->midtrans->checkout($model);
+                // return $midtransResp;
+                // END PEMBAYARA MIDTRANS
+                if ($midtransResp->status_code == '201') {
                     $pembayaran->payment_gateway = 'midtrans';
+                    $pembayaran->id_transaksi = $midtransResp->transaction_id;
+                    if (!$pembayaran->save()) {
+                        return [
+                            'status' => false,
+                            'message' => "Failed Saved to pembayaran!",
+                        ];
+                    }
+                    $transaction->commit();
+                    return [
+                        'status' => true,
+                        'message' => "Successfully saved ",
+                        'midtrans' => $midtransResp
+                    ];
                 }
-                $pembayaran->jumlah = $totalBayar;
-                $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-                $pembayaran->payment_status = $status;
-                $pembayaran->id_transaksi = $midtransResp->transaction_id;
+            } else {
+                $cash = $body['cash'];
+                $pembayaran->jumlah_diberikan = $cash['jumlah_diberikan'];
+                $pembayaran->jumlah_kembalian = $cash['jumlah_kembalian'];
                 if (!$pembayaran->save()) {
                     return [
                         'status' => false,
@@ -167,16 +183,17 @@ class PembayaranController extends Controller
                 return [
                     'status' => true,
                     'message' => "Successfully saved ",
-                    'midtrans' => $midtransResp
-                ];
-            } catch (Exception $e) {
-                return [
-                    'status' => false,
-                    'message' => "Exception occurred while saving model for with error: " . $e->getMessage(),
+                    'cash' => $pembayaran
                 ];
             }
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => "Exception occurred while saving model for with error: " . $e->getMessage(),
+            ];
         }
     }
+
     public function actionCancel()
     {
         $request = Yii::$app->request;
