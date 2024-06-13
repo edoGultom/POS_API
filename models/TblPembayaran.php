@@ -27,7 +27,7 @@ class TblPembayaran extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_penjualan', 'jumlah'], 'integer'],
+            [['id_penjualan', 'jumlah', 'jumlah_diberikan', 'jumlah_kembalian'], 'integer'],
             [['payment_method', 'payment_gateway', 'payment_status'], 'string', 'max' => 100],
             [['tanggal_pembayaran'], 'safe'],
             [['id_transaksi'], 'string'],

@@ -18,6 +18,8 @@ class m240520_170946_create_tbl_pembayaran_table extends Migration
             'payment_method' => $this->string(100), //QRIS / CASH
             'payment_gateway' => $this->string(100), //Menyimpan gateway pembayaran jika ada (null untuk cash dan qris)
             'jumlah' => $this->integer(),
+            'jumlah_diberikan' => $this->integer(), //Jumlah diberikan customer
+            'jumlah_kembalian' => $this->integer(), //Jumlah dikembalikan customer
             'tanggal_pembayaran' => $this->dateTime(),
             'payment_status' => $this->string(100), //Completed, Failed
             'id_transaksi' => $this->text(), //ID Transaksi dari Payment Gateway
