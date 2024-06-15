@@ -5,6 +5,7 @@ namespace app\models;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
 use Yii;
+use yii\db\Exception;
 
 /**
  * This is the model class for table "partai".

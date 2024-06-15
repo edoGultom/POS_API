@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use Exception;
 use Yii;
 
 /**
@@ -30,6 +31,31 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
         return [
             [['id_penjualan', 'id_barang', 'qty', 'harga', 'total'], 'integer'],
         ];
+    }
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+        if ($insert) {
+            $connection = Yii::$app->db;
+            $transaction = $connection->beginTransaction();
+            try {
+                $barang = TblBarang::findOne(['id' => $this->id_barang]);
+                if (!$barang) {
+                    throw new Exception('Menu not found');
+                }
+                $barang->type = 'sales';
+                $barang->updateStok = $this->qty;
+                $barang->stok = $barang->stok - $this->qty;
+
+                if (!$barang->save()) {
+                    throw new Exception('Failed to save the stock menus: ');
+                }
+                $transaction->commit();
+            } catch (Exception $e) {
+                $transaction->rollBack();
+                throw new Exception('Failed to save the stock menus: ' . $e->getMessage());
+            }
+        }
     }
     public function getBarang()
     {

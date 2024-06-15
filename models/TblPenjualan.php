@@ -48,22 +48,4 @@ class TblPenjualan extends \yii\db\ActiveRecord
     {
         return $this->hasMany(TblPenjualanBarang::class, ['id_penjualan' => 'id']);
     }
-    // public function afterSave($insert, $changedAttributes)
-    // {
-    //     parent::afterSave($insert, $changedAttributes);
-
-    //     if ($insert) {
-    //         // INSERT
-    //         $stock = new TblPenjualanBarang();
-    //         $stock->id_penjualan = $this->id;
-    //         $stock->id_barang = $this->id_barang;
-    //         $stock->qty = $this->qty;
-    //         $stock->harga = $this->harga;
-    //         $stock->total = $this->total;
-
-    //         if (!$stock->save()) {
-    //             throw new Exception('Failed to save the stock: ');
-    //         }
-    //     }
-    // }
 }

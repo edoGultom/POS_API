@@ -125,23 +125,29 @@ class PembayaranController extends Controller
         $totalBayar = $body['totalBayar'];
         $status = $body['status'];
 
-        $model = new TblPenjualan();
-        $model->id_user = Yii::$app->user->identity->id;
-        $model->total_transaksi = $totalBayar;
-        $model->status_pembayaran = $status;
-        if ($metode_pembayaran === 'qris') {
-            $model->payment_gateway = 'midtrans';
-        }
-        if (!$model->save()) {
-            return [
-                'status' => false,
-                'message' => "Failed Saved!",
-            ];
-        }
-        $this->savePenjualan($data, $model->id);
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
+            $model = new TblPenjualan();
+            $model->id_user = Yii::$app->user->identity->id;
+            $model->total_transaksi = $totalBayar;
+            $model->status_pembayaran = $status;
+            if ($metode_pembayaran === 'qris') {
+                $model->payment_gateway = 'midtrans';
+            }
+            if (!$model->save()) {
+                $transaction->rollBack();
+                throw new Exception('Failed to save penjualan: ');
+            }
+            $res = $this->savePenjualan($data, $model->id);
+            if (!$res['status']) {
+                $transaction->rollBack();
+                throw new Exception('Failed to save penjualan barang: ');
+            }
+            // echo "<pre>";
+            // print_r($res);
+            // echo "</pre>";
+            // exit();
             //    PEMMBAYARAN MIDTRANS
             $pembayaran = new TblPembayaran();
             $pembayaran->id_penjualan = $model->id;
@@ -151,16 +157,13 @@ class PembayaranController extends Controller
             $pembayaran->payment_status = $status;
             if ($metode_pembayaran === 'qris') {
                 $midtransResp = Yii::$app->midtrans->checkout($model);
-                // return $midtransResp;
                 // END PEMBAYARA MIDTRANS
                 if ($midtransResp->status_code == '201') {
                     $pembayaran->payment_gateway = 'midtrans';
                     $pembayaran->id_transaksi = $midtransResp->transaction_id;
                     if (!$pembayaran->save()) {
-                        return [
-                            'status' => false,
-                            'message' => "Failed Saved to pembayaran!",
-                        ];
+                        $transaction->rollBack();
+                        throw new Exception('Failed to save pembayaran ');
                     }
                     $transaction->commit();
                     return [
@@ -174,23 +177,19 @@ class PembayaranController extends Controller
                 $pembayaran->jumlah_diberikan = $cash['jumlah_diberikan'];
                 $pembayaran->jumlah_kembalian = $cash['jumlah_kembalian'];
                 if (!$pembayaran->save()) {
-                    return [
-                        'status' => false,
-                        'message' => "Failed Saved to pembayaran!",
-                    ];
+                    $transaction->rollBack();
+                    throw new Exception('Failed to save pembayaran ');
                 }
                 $transaction->commit();
                 return [
                     'status' => true,
-                    'message' => "Successfully saved ",
+                    'message' => "Successfully savedss ",
                     'cash' => $pembayaran
                 ];
             }
         } catch (Exception $e) {
-            return [
-                'status' => false,
-                'message' => "Exception occurred while saving model for with error: " . $e->getMessage(),
-            ];
+            $transaction->rollBack();
+            throw new Exception('Failed to save: ' . $e->getMessage());
         }
     }
 

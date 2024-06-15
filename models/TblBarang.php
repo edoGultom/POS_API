@@ -34,6 +34,7 @@ class TblBarang extends \yii\db\ActiveRecord
      * {@inheritdoc}
      */
     public $type;
+    public $updateStok;
     public function rules()
     {
         return [
@@ -41,23 +42,35 @@ class TblBarang extends \yii\db\ActiveRecord
             [['created_at', 'updated_at', 'id_satuan', 'id_kategori', 'harga', 'stok'], 'integer'],
             [['nama_barang', 'type'], 'string', 'max' => 255],
             ['path', 'string'],
-            ['type', 'safe'] //ex. addition/ sale
+            [['type', 'updateStok'], 'safe'] //ex. addition/ sale
         ];
     }
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
-
-        if ($insert) {
-            // INSERT
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
             $stock = new TblStokBarang();
-            $stock->perubahan_stok = $this->stok;
             $stock->id_barang = $this->id;
             $stock->tipe = $this->type;
             $stock->tanggal = date('Y-m-d');
-            if (!$stock->save()) {
-                throw new Exception('Failed to save the stock: ');
+
+            if ($insert) {
+                $stock->perubahan_stok = $this->stok;
+                if (!$stock->save()) {
+                    throw new Exception('Failed to save the stock: ');
+                }
+            } else {
+                $stock->perubahan_stok -= $this->updateStok;
+                if (!$stock->save()) {
+                    throw new Exception('Failed to save the stock: ');
+                }
             }
+            $transaction->commit();
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            throw new Exception('Failed to save the stock menus: ' . $e->getMessage());
         }
     }
     public function beforeDelete()
