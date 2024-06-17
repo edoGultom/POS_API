@@ -34,4 +34,17 @@ class TblPembayaran extends \yii\db\ActiveRecord
             [['id_transaksi'], 'string'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+        // Add extra field
+        $fields['detail']  = function ($model) {
+            return $this->penjualan->penjualanBarang ?? [];
+        };
+        return $fields;
+    }
+    public function getPenjualan()
+    {
+        return $this->hasOne(TblPenjualan::class, ['id' => 'id_penjualan'])->orderBy(['id' => SORT_DESC]);
+    }
 }

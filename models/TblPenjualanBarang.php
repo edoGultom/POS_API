@@ -32,6 +32,20 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
             [['id_penjualan', 'id_barang', 'qty', 'harga', 'total'], 'integer'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['nama_barang']  = function ($model) {
+            return $this->barang->nama_barang ?? '-';
+        };
+        $fields['link']  = function ($model) {
+            return $this->barang->path ?? '-';
+        };
+        $fields['kategori']  = function ($model) {
+            return $this->barang->kategori->nama_kategori ?? '-';
+        };
+        return $fields;
+    }
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
@@ -59,6 +73,6 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
     }
     public function getBarang()
     {
-        return $this->hasOnne(TblBarang::class, ['id' => 'id_barang']);
+        return $this->hasOne(TblBarang::class, ['id' => 'id_barang']);
     }
 }
