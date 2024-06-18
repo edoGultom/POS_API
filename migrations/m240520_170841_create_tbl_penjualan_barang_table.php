@@ -16,6 +16,7 @@ class m240520_170841_create_tbl_penjualan_barang_table extends Migration
             'id' => $this->primaryKey(),
             'id_penjualan' => $this->integer(),
             'id_barang' => $this->integer(),
+            'temperatur' => $this->string(50),
             'qty' => $this->integer(),
             'harga' => $this->integer(),
             'total' => $this->integer(),

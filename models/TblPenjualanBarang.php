@@ -30,6 +30,7 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
     {
         return [
             [['id_penjualan', 'id_barang', 'qty', 'harga', 'total'], 'integer'],
+            ['temperatur', 'string', 'max' => 50]
         ];
     }
     public function fields()

@@ -147,7 +147,10 @@ class UserController extends \yii\rest\Controller
                     ->where(['like', 'lower(username)',  strtolower($user->username)])->one();
                 $command = $query->createCommand();
                 $data = $command->queryOne();
-
+                $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $user->id])->asArray()->all();
+                $data['user']['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
+                    return str_replace(" ", "_", $m['item_name']);
+                });
                 $this->data = $data;
                 $this->status = true;
                 $this->pesan = 'register berhasil';

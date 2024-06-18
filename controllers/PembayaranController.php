@@ -79,6 +79,7 @@ class PembayaranController extends Controller
                     $model->id_penjualan = $idPenjualan;
                     $model->id_barang = $value['id'];
                     $model->qty = $value['qty'];
+                    $model->temperatur = $value['temperatur'];
                     $model->harga = $value['harga'];
                     $model->total = $value['totalHarga'];
                     try {

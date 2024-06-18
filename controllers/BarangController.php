@@ -62,7 +62,7 @@ class BarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblBarang::find()->all();
+        $model = TblBarang::find()->where(['>', 'stok', 1])->all();
         if (count($model) > 0) {
             return $model;
         }
