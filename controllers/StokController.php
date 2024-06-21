@@ -56,7 +56,8 @@ class StokController extends Controller
             SELECT 
                 b.nama_barang,
                 -- COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) AS stok_awal,
-                COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) AS masuk,
+                --COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN +sb.perubahan_stok ELSE 0 END), 0) AS masuk,
+                concat('+',COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0)) AS masuk,
                 COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0) AS keluar,
                 (COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) - 
                 COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN -sb.perubahan_stok ELSE 0 END), 0)) AS stok_akhir

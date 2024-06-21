@@ -5,6 +5,8 @@ $params = require __DIR__ . '/params.php';
 
 $config = [
     'id' => 'app-yii2',
+    'language' => 'id-ID',
+    'timeZone' => 'Asia/Jakarta',
     'basePath' => dirname(__DIR__),
     'aliases' => [
         '@temp' => __DIR__ . '/../temp',
