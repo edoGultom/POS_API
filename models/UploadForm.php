@@ -98,14 +98,14 @@ class UploadForm extends Model
                         array_push($arrIdFile, $fileDb->filename);
                     }
                 }
-                $pengaduan = TblBarang::findOne(['id' => $id]);
-                $pengaduan->path =  implode(', ', $arrIdFile);
-                $pengaduan->type =  $type;
-                if ($pengaduan->save()) {
-                    $transaction->commit();
-                    return true;
-                }
-                return  $pengaduan->getErrors();
+                // $pengaduan = TblBarang::findOne(['id' => $id]);
+                // $pengaduan->path =  implode(', ', $arrIdFile);
+                // $pengaduan->type =  $type;
+                // if ($pengaduan->save()) {
+                $transaction->commit();
+                return true;
+                // }
+                // return  $pengaduan->getErrors();
             } catch (\Exception $e) {
                 $transaction->rollBack();
                 return $e->getMessage();
