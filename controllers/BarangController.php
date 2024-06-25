@@ -112,9 +112,17 @@ class BarangController extends Controller
                     $upload = new UploadForm();
                     $upload->imageFilesMenu = $files;
                     $resp = $upload->uploadFileMenu($barang->id, $barang->type);
+                    // return $resp;
                     if (!$resp) {
                         $this->status = false;
                         $this->pesan = $resp;
+                    }
+                    $barang->path = $resp;
+                    if (!$barang->save()) {
+                        return [
+                            'status' => false,
+                            'message' => $barang->getErrors(),
+                        ];
                     }
                     $transaction->commit();
                     $res['status'] = true;
@@ -150,11 +158,19 @@ class BarangController extends Controller
         $files = UploadedFile::getInstancesByName("file");
         try {
             $barang =  $this->findModel($id);
+            $currentStok = $barang->stok;
             if ($barang) {
                 $barang->setAttributes($data); // Set the attributes manually
-                $barang->stok = $barang->getNewStok();
-                $data = $request->bodyParams; // Get the body of the request
-
+                if ($data['stok'] > $currentStok) {
+                    $barang->type = 'addition';
+                    $resStok = $barang->getNewStok();
+                    if (!$resStok) {
+                        return [
+                            'status' => false,
+                            'message' => $resStok,
+                        ];
+                    }
+                }
                 if ($barang->validate() && $barang->save()) {
                     if (!empty($files)) {
                         UploadedFiledb::find()->where(['filename' =>  $barang->path])->one()->delete();
@@ -166,9 +182,13 @@ class BarangController extends Controller
                             $this->status = false;
                             $this->pesan = $resp;
                         }
-                    } else {
-                        $res['status'] = false;
-                        $res['pesan'] = 'file kosong!';
+                        $barang->path = $resp;
+                        if (!$barang->save()) {
+                            return [
+                                'status' => false,
+                                'message' => $barang->getErrors(),
+                            ];
+                        }
                     }
                     $transaction->commit();
                     $res['status'] = true;
@@ -178,7 +198,6 @@ class BarangController extends Controller
                     return [
                         'status' => false,
                         'message' => $barang->getErrors(),
-                        // 'message' => $barang->getRequiredAttributes()
                     ];
                 }
             }

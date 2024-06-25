@@ -103,7 +103,7 @@ class UploadForm extends Model
                 // $pengaduan->type =  $type;
                 // if ($pengaduan->save()) {
                 $transaction->commit();
-                return true;
+                return implode(', ', $arrIdFile);
                 // }
                 // return  $pengaduan->getErrors();
             } catch (\Exception $e) {

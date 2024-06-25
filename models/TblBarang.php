@@ -62,9 +62,11 @@ class TblBarang extends \yii\db\ActiveRecord
                     throw new Exception('Failed to save the stock: ');
                 }
             } else {
-                $stock->perubahan_stok -= $this->updateStok;
-                if (!$stock->save()) {
-                    throw new Exception('Failed to save the stock: ');
+                if ($this->type === 'sales') {
+                    $stock->perubahan_stok -= $this->updateStok;
+                    if (!$stock->save()) {
+                        throw new Exception('Failed to save the stock: ');
+                    }
                 }
             }
             $transaction->commit();
@@ -96,20 +98,20 @@ class TblBarang extends \yii\db\ActiveRecord
         $model->tipe = $this->type;
         $model->tanggal = date('Y-m-d');
 
-        $resultStok = 0;
         if ($this->type === 'addition') {
-            $resultStok = $stockExists->perubahan_stok + $this->stok;
-        } else if ($this->type === 'sale') {
+            $model->perubahan_stok =  ($this->stok - $stockExists->perubahan_stok); //contoh stok awal 50 ditambah 3 yang diinput harus 53 dari mobile (v1)
+        } else if ($this->type === 'sales') {
             if ($stockExists->perubahan_stok <= $this->stok) {
                 throw new NotFoundHttpException('Stock Tidak Cukup. minimal 1 stok tersedia');
             }
-            $resultStok = $stockExists->perubahan_stok - $this->stok;
+            $model->perubahan_stok = $stockExists->perubahan_stok - $this->stok;
+        } else {
+            $model->perubahan_stok = $this->stok;
         }
-        $model->perubahan_stok = $this->stok;
         if (!$model->save()) {
             throw new Exception('Failed to save the stock: ');
         }
-        return $resultStok;
+        return true;
     }
     public function getSatuan()
     {
