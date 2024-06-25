@@ -54,19 +54,19 @@ class StokController extends Controller
         $model = Yii::$app->db->createCommand(
             "
             SELECT 
-                b.nama_barang,
-                -- COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) AS stok_awal,
-                --COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN +sb.perubahan_stok ELSE 0 END), 0) AS masuk,
-                concat('+',COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0)) AS masuk,
-                COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0) AS keluar,
-                (COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) - 
-                COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN -sb.perubahan_stok ELSE 0 END), 0)) AS stok_akhir
+                    b.nama_barang,
+                    COALESCE(SUM(CASE WHEN sb.tipe = 'initialstok' THEN sb.perubahan_stok ELSE 0 END), 0)as stok_awal,
+                    COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) AS masuk,
+                    COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0) AS keluar,
+                    (COALESCE(SUM(CASE WHEN sb.tipe = 'initialstok' THEN sb.perubahan_stok ELSE 0 END), 0) +
+                    COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) +
+                    COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0)) AS stok_akhir
             FROM 
-                tbl_barang b
+                    tbl_barang b
             LEFT JOIN 
-                tbl_stok_barang sb ON b.id = sb.id_barang
+                    tbl_stok_barang sb ON b.id = sb.id_barang
             GROUP BY 
-                b.id, b.nama_barang;
+                    b.id, b.nama_barang;
             "
         )->queryAll();
         return array_values($model);
