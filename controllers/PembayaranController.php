@@ -164,7 +164,7 @@ class PembayaranController extends Controller
                     $pembayaran->id_transaksi = $midtransResp->transaction_id;
                     $actions = $midtransResp->actions[0];
                     // return $actions->url;
-                    $pembayaran->link_qris = $midtransResp->actions[0]['url'];
+                    $pembayaran->link_qris = $actions->url;
                     if (!$pembayaran->save()) {
                         $transaction->rollBack();
                         throw new Exception('Failed to save pembayaran ');
