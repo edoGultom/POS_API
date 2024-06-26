@@ -49,9 +49,9 @@ class UploadFileController extends Controller
 
     public function actionUpload()
     {
+        return 'a';
         $model = new UploadForm();
-        echo 'a';
-        exit();
+
         $model->imageFile =  UploadedFile::getInstanceByName('imageFile');
         $resp = $model->uploadProfile();
 
