@@ -60,6 +60,9 @@ $config = [
         'api' => [
             'class' => 'app\components\Api',
         ],
+        'midtrans' => [
+            'class' => 'app\components\MidtransNotification',
+        ],
         'formatter' => [
             'dateFormat' => 'dd.MM.yyyy',
             'decimalSeparator' => ',',
