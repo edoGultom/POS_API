@@ -53,30 +53,6 @@ class ReportController extends Controller
     protected function findByDateRange($start, $end)
     {
         $model = Yii::$app->db->createCommand(
-            // "
-            //     SELECT 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd') AS date,
-            //         p.id, -- ID produk
-            //         p.nama_barang, -- Nama produk
-            //         SUM(si.qty) AS total_quantity_sold, -- Total kuantitas yang terjual
-            //         SUM(si.harga * si.qty) AS total_sales_amount, -- Total penjualan dalam nilai uang
-            //         SUM(CASE WHEN py.payment_method = 'CASH' THEN si.harga * si.qty ELSE 0 END) AS cash_sales, -- Total penjualan tunai
-            //         SUM(CASE WHEN py.payment_method = 'QRIS' THEN si.harga * si.qty ELSE 0 END) AS qris_sales -- Total penjualan via QRIS
-            //     FROM 
-            //         tbl_penjualan s
-            //     JOIN 
-            //         tbl_penjualan_barang si ON s.id = si.id_penjualan -- Gabung tabel Sales dan Sale_Items
-            //     JOIN 
-            //         tbl_barang p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
-            //     LEFT JOIN 
-            //         tbl_pembayaran py ON s.id = py.id_penjualan -- Gabung tabel Sales dan Payments
-            //     WHERE 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd') BETWEEN '$start' AND '$end' -- Filter berdasarkan tanggal
-            //     GROUP BY 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd'), p.id, p.nama_barang -- Kelompokkan berdasarkan tanggal, ID produk, dan nama produk
-            //     ORDER BY 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd'), p.id; -- Urutkan berdasarkan tanggal dan ID produk
-            // "
             "
             SELECT 
                 DATE_FORMAT(FROM_UNIXTIME(s.created_at), '%Y-%m-%d') AS date, -- Format timestamp ke YYYY-MM-DD
@@ -107,30 +83,6 @@ class ReportController extends Controller
     protected function findByDate($date)
     {
         $model = Yii::$app->db->createCommand(
-            // "
-            //     SELECT 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd') AS date,
-            //         p.id, -- ID produk
-            //         p.nama_barang, -- Nama produk
-            //         SUM(si.qty) AS total_quantity_sold, -- Total kuantitas yang terjual
-            //         SUM(si.harga * si.qty) AS total_sales_amount, -- Total penjualan dalam nilai uang
-            //         SUM(CASE WHEN py.payment_method = 'CASH' THEN si.harga * si.qty ELSE 0 END) AS cash_sales, -- Total penjualan tunai
-            //         SUM(CASE WHEN py.payment_method = 'QRIS' THEN si.harga * si.qty ELSE 0 END) AS qris_sales -- Total penjualan via QRIS
-            //     FROM 
-            //         tbl_penjualan s
-            //     JOIN 
-            //         tbl_penjualan_barang si ON s.id = si.id_penjualan -- Gabung tabel Sales dan Sale_Items
-            //     JOIN 
-            //         tbl_barang p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
-            //     LEFT JOIN 
-            //         tbl_pembayaran py ON s.id = py.id_penjualan -- Gabung tabel Sales dan Payments
-            //     WHERE 
-            //          to_char(to_timestamp(s.created_at), 'YYYY-mm-dd') ='$date'
-            //     GROUP BY 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd'), p.id, p.nama_barang -- Kelompokkan berdasarkan tanggal, ID produk, dan nama produk
-            //     ORDER BY 
-            //         to_char(to_timestamp(s.created_at), 'YYYY-mm-dd'), p.id; -- Urutkan berdasarkan tanggal dan ID produk
-            // "
             "
             SELECT 
                 DATE_FORMAT(FROM_UNIXTIME(s.created_at), '%Y-%m-%d') AS date, -- Format timestamp ke YYYY-MM-DD
