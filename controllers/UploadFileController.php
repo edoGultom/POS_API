@@ -53,7 +53,11 @@ class UploadFileController extends Controller
         $model = new UploadForm();
         $model->imageFile =  UploadedFile::getInstanceByName('imageFile');
         $resp = $model->uploadProfile();
-        // return $resp;
+        echo "<pre>";
+        print_r($resp);
+        echo "</pre>";
+        exit();
+        return $resp;
         if ($resp) {
             // file is uploaded successfully
             $this->status = true;
