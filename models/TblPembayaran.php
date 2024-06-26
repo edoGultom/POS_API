@@ -31,7 +31,7 @@ class TblPembayaran extends \yii\db\ActiveRecord
             [['id_penjualan', 'jumlah', 'jumlah_diberikan', 'jumlah_kembalian'], 'integer'],
             [['payment_method', 'payment_gateway', 'payment_status'], 'string', 'max' => 100],
             [['tanggal_pembayaran'], 'safe'],
-            [['id_transaksi'], 'string'],
+            [['id_transaksi', 'link_qris'], 'string'],
         ];
     }
     public function fields()
