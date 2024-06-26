@@ -28,13 +28,14 @@ class UploadForm extends Model
 
     public function uploadProfile()
     {
+        echo "<pre>";
+        print_r($this->imageFile);
+        echo "</pre>";
+        exit();
         if ($this->validate()) {
             $connection = Yii::$app->db;
             $transaction = $connection->beginTransaction();
-            echo "<pre>";
-            print_r($this->imageFile);
-            echo "</pre>";
-            exit();
+
             try {
                 $ext = $this->imageFile->extension;
                 $nameFile =  'profil_' . Yii::$app->user->identity->id . '.' . $ext;
