@@ -48,6 +48,8 @@ class BarangController extends Controller
                     'add'  => ['POST'],
                     'update'  => ['POST'],
                     'delete'  => ['DELETE'],
+                    'test'  => ['GET'],
+
                 ],
             ],
         ]);
