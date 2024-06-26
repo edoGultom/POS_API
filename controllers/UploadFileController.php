@@ -46,6 +46,10 @@ class UploadFileController extends Controller
             ],
         ]);
     }
+    public function actionTest()
+    {
+        return 'a';
+    }
 
     public function actionUpload()
     {
