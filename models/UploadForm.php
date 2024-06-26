@@ -36,10 +36,6 @@ class UploadForm extends Model
             try {
                 $ext = $this->imageFile->extension;
                 $nameFile =  'profil_' . Yii::$app->user->identity->id . '.' . $ext;
-                echo "<pre>";
-                print_r($this->imageFile);
-                echo "</pre>";
-                exit();
                 $this->imageFile->saveAs('@temp/' . $nameFile);
 
                 $newNameFile =   'profil_' . Yii::$app->user->identity->id . '_compressed.' . $ext;
