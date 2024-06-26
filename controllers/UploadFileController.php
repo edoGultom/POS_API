@@ -15,7 +15,6 @@ use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
 
 class UploadFileController extends Controller
-
 {
     public $pesan = '';
     public $data = '';
@@ -51,12 +50,11 @@ class UploadFileController extends Controller
     public function actionUpload()
     {
         $model = new UploadForm();
+        echo 'a';
+        exit();
         $model->imageFile =  UploadedFile::getInstanceByName('imageFile');
         $resp = $model->uploadProfile();
-        echo "<pre>";
-        print_r($resp);
-        echo "</pre>";
-        exit();
+
         return $resp;
         if ($resp) {
             // file is uploaded successfully
