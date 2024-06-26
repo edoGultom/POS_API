@@ -162,8 +162,8 @@ class PembayaranController extends Controller
                 if ($midtransResp->status_code == '201') {
                     $pembayaran->payment_gateway = 'midtrans';
                     $pembayaran->id_transaksi = $midtransResp->transaction_id;
-                    return $midtransResp;
-                    $pembayaran->link_qris = $midtransResp->actions['url'];
+                    // return $midtransResp;
+                    $pembayaran->link_qris = $midtransResp->actions[0]['url'];
                     if (!$pembayaran->save()) {
                         $transaction->rollBack();
                         throw new Exception('Failed to save pembayaran ');
