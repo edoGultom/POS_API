@@ -163,7 +163,7 @@ class PembayaranController extends Controller
                     $pembayaran->payment_gateway = 'midtrans';
                     $pembayaran->id_transaksi = $midtransResp->transaction_id;
                     $actions = (array)$midtransResp->actions;
-                    return $actions;
+                    return $actions[0]['url'];
                     $pembayaran->link_qris = $midtransResp->actions[0]['url'];
                     if (!$pembayaran->save()) {
                         $transaction->rollBack();
