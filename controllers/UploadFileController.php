@@ -42,6 +42,7 @@ class UploadFileController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'upload'  => ['POST'],
+                    'test'  => ['GET'],
                 ],
             ],
         ]);
