@@ -52,6 +52,10 @@ class BarangController extends Controller
             ],
         ]);
     }
+    public function actionTest()
+    {
+        return 'a';
+    }
     protected function findModel($id)
     {
         $model = TblBarang::findOne($id);
