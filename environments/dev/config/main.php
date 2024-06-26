@@ -64,6 +64,10 @@ $config = [
         ],
         'midtrans' => [
             'class' => 'app\components\MidtransNotification',
+            'isProduction' => false,
+            'merchantId' => 'G047137008',
+            'clientKey' => 'SB-Mid-client-Xf6Sr2eSuIto9_vn',
+            'serverKey' => 'SB-Mid-server-vb9mGwshjOGUYK5IV8M6peGo',
         ],
         'formatter' => [
             'dateFormat' => 'dd.MM.yyyy',
