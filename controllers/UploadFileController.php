@@ -29,17 +29,17 @@ class UploadFileController extends Controller
     {
         return ArrayHelper::merge(parent::behaviors(), [
             'authenticator' => [
-                'class' => CompositeAuth::className(),
+                'class' => CompositeAuth::class,
                 'authMethods' => [
-                    ['class' => HttpBearerAuth::className()],
-                    ['class' => QueryParamAuth::className(), 'tokenParam' => 'accessToken'],
+                    ['class' => HttpBearerAuth::class],
+                    ['class' => QueryParamAuth::class, 'tokenParam' => 'accessToken'],
                 ]
             ],
             'exceptionFilter' => [
-                'class' => ErrorToExceptionFilter::className()
+                'class' => ErrorToExceptionFilter::class
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'upload'  => ['POST'],
                 ],
