@@ -99,7 +99,11 @@ class TblBarang extends \yii\db\ActiveRecord
         $model->tanggal = date('Y-m-d');
 
         if ($this->type === 'addition') {
-            $model->perubahan_stok =  ($this->stok - $stockExists->perubahan_stok); //contoh stok awal 50 ditambah 3 yang diinput harus 53 dari mobile (v1)
+            $model->perubahan_stok =  ($this->stok - ($stockExists->barang->stok ?? 0)); //contoh stok awal 50 ditambah 3 yang diinput harus 53 dari mobile (v1)
+            // echo "<pre>";
+            // print_r($model);
+            // echo "</pre>";
+            // exit();
         } else if ($this->type === 'sales') {
             if ($stockExists->perubahan_stok <= $this->stok) {
                 throw new NotFoundHttpException('Stock Tidak Cukup. minimal 1 stok tersedia');
@@ -108,6 +112,7 @@ class TblBarang extends \yii\db\ActiveRecord
         } else {
             $model->perubahan_stok = $this->stok;
         }
+
         if (!$model->save()) {
             throw new Exception('Failed to save the stock: ');
         }

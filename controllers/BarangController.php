@@ -170,6 +170,7 @@ class BarangController extends Controller
                 if ($data['stok'] > $currentStok) {
                     $barang->type = 'addition';
                     $resStok = $barang->getNewStok();
+
                     if (!$resStok) {
                         return [
                             'status' => false,

@@ -39,4 +39,8 @@ class TblStokBarang extends \yii\db\ActiveRecord
             [['tanggal'], 'safe'],
         ];
     }
+    public function getBarang()
+    {
+        return $this->hasOne(TblBarang::class, ['id' => 'id_barang'])->orderBy(['id' => SORT_DESC]);
+    }
 }
