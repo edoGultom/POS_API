@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblBarang;
+use app\models\TblMenu;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use Yii;
@@ -67,7 +67,7 @@ class ReportController extends Controller
             JOIN 
                 tbl_penjualan_barang si ON s.id = si.id_penjualan -- Gabung tabel Sales dan Sale_Items
             JOIN 
-                tbl_barang p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
+                tbl_menu p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
             LEFT JOIN 
                 tbl_pembayaran py ON s.id = py.id_penjualan -- Gabung tabel Sales dan Payments
             WHERE 
@@ -97,7 +97,7 @@ class ReportController extends Controller
             JOIN 
                 tbl_penjualan_barang si ON s.id = si.id_penjualan -- Gabung tabel Sales dan Sale_Items
             JOIN 
-                tbl_barang p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
+                tbl_menu p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
             LEFT JOIN 
                 tbl_pembayaran py ON s.id = py.id_penjualan -- Gabung tabel Sales dan Payments
             WHERE 
@@ -112,7 +112,7 @@ class ReportController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblBarang::find()->all();
+        $model = TblMenu::find()->all();
         if (count($model) > 0) {
             return $model;
         }

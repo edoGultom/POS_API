@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblBarang;
+use app\models\TblMenu;
 use app\models\TblPembayaran;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;

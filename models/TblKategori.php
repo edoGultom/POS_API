@@ -13,19 +13,19 @@ use Yii;
  * @property string|null $nama_partai
  * @property string|null $keterangan
  */
-class TblSatuanBarang extends \yii\db\ActiveRecord
+class TblKategori extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'tbl_satuan_barang';
+        return 'tbl_kategori';
     }
     public function behaviors()
     {
         return [
-            TimestampBehavior::class,
+            TimestampBehavior::class
         ];
     }
     /**
@@ -35,7 +35,7 @@ class TblSatuanBarang extends \yii\db\ActiveRecord
     {
         return [
             [['created_at', 'updated_at'], 'integer'],
-            [['nama_satuan'], 'string', 'max' => 255],
+            [['nama_kategori'], 'string', 'max' => 255],
         ];
     }
 }

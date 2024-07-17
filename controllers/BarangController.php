@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblBarang;
+use app\models\TblMenu;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use Yii;
@@ -60,7 +60,7 @@ class BarangController extends Controller
     }
     protected function findModel($id)
     {
-        $model = TblBarang::findOne($id);
+        $model = TblMenu::findOne($id);
         if ($model !== null) {
             return $model;
         }
@@ -68,7 +68,7 @@ class BarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblBarang::find()->where(['>', 'stok', 1])->all();
+        $model = TblMenu::find()->where(['>', 'stok', 1])->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -109,7 +109,7 @@ class BarangController extends Controller
         $files = UploadedFile::getInstancesByName("file");
 
         try {
-            $barang = new TblBarang();
+            $barang = new TblMenu();
             $data = $request->bodyParams; // Get the body of the request
             $barang->load($data, '');
             if ($barang->validate() &&  $barang->save()) {

@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblBarang;
+use app\models\TblMenu;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use Yii;
@@ -62,7 +62,7 @@ class StokController extends Controller
                     COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) +
                     COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0)) AS stok_akhir
             FROM 
-                    tbl_barang b
+                    tbl_menu b
             LEFT JOIN 
                     tbl_stok_barang sb ON b.id = sb.id_barang
             GROUP BY 

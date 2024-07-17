@@ -15,14 +15,14 @@ use yii\web\NotFoundHttpException;
  * @property string|null $nama_partai
  * @property string|null $keterangan
  */
-class TblBarang extends \yii\db\ActiveRecord
+class TblMenu extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'tbl_barang';
+        return 'tbl_menu';
     }
     public function behaviors()
     {
@@ -120,11 +120,11 @@ class TblBarang extends \yii\db\ActiveRecord
     }
     public function getSatuan()
     {
-        return $this->hasOne(TblSatuanBarang::class, ['id' => 'id_satuan'])->orderBy(['id' => SORT_DESC]);
+        return $this->hasOne(TblSatuan::class, ['id' => 'id_satuan'])->orderBy(['id' => SORT_DESC]);
     }
     public function getKategori()
     {
-        return $this->hasOne(TblKategoriBarang::class, ['id' => 'id_kategori'])->orderBy(['id' => SORT_DESC]);
+        return $this->hasOne(TblKategori::class, ['id' => 'id_kategori'])->orderBy(['id' => SORT_DESC]);
     }
 
     public function fields()

@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblKategoriBarang;
+use app\models\TblKategori;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -51,7 +51,7 @@ class KategoriBarangController extends Controller
     }
     protected function findModel($id)
     {
-        $model = TblKategoriBarang::findOne($id);
+        $model = TblKategori::findOne($id);
         if ($model !== null) {
             return $model;
         }
@@ -59,7 +59,7 @@ class KategoriBarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblKategoriBarang::find()->all();
+        $model = TblKategori::find()->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -95,7 +95,7 @@ class KategoriBarangController extends Controller
         $transaction = $connection->beginTransaction();
 
         try {
-            $model = new TblKategoriBarang();
+            $model = new TblKategori();
             $data = $request->bodyParams; // Get the body of the request
             $model->load($data, '');
             if ($model->validate() &&  $model->save()) {

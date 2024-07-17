@@ -3,31 +3,33 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%tbl_satuan_barang}}`.
+ * Handles the creation of table `{{%kategori_barang}}`.
  */
-class m240520_162312_create_tbl_satuan_barang_table extends Migration
+class m240520_162202_create_kategori_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%tbl_satuan_barang}}', [
+        $this->createTable('{{%tbl_kategori}}', [
             'id' => $this->primaryKey(),
-            'nama_satuan' => $this->string(25),
+            'nama_kategori' => $this->string(255),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),
         ]);
         $this->batchInsert(
-            'tbl_satuan_barang',
+            'tbl_kategori',
             [
-                'nama_satuan',
+                'nama_kategori',
                 'created_at',
                 'updated_at'
             ],
             [
-                ['Cup', time(), time()],
-            ]
+                ['Makanan', time(), time()],
+                ['Minuman', time(), time()],
+
+            ],
         );
     }
 
@@ -36,6 +38,6 @@ class m240520_162312_create_tbl_satuan_barang_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%tbl_satuan_barang}}');
+        $this->dropTable('{{%kategori_barang}}');
     }
 }

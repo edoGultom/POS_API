@@ -41,6 +41,6 @@ class TblStokBarang extends \yii\db\ActiveRecord
     }
     public function getBarang()
     {
-        return $this->hasOne(TblBarang::class, ['id' => 'id_barang'])->orderBy(['id' => SORT_DESC]);
+        return $this->hasOne(TblMenu::class, ['id' => 'id_barang'])->orderBy(['id' => SORT_DESC]);
     }
 }
