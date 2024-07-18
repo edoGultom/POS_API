@@ -15,9 +15,9 @@ class m240717_061608_create_tbl_stok_transaksi_bahan_baku_table extends Migratio
         $this->createTable('{{%tbl_transaksi_stok}}', [
             'id' => $this->primaryKey(),
             'id_bahan_baku' => $this->integer(), //(Foreign Key ke tabel Ingredients)
-            'transaction_type' => "ENUM('Masuk', 'Keluar')",
+            'tipe' => "ENUM('Masuk', 'Keluar')",
             'quantity' => $this->integer(),
-            'transaction_time' => $this->dateTime(),
+            'waktu' => $this->dateTime(),
         ]);
         // add foreign key 
         $this->addForeignKey(

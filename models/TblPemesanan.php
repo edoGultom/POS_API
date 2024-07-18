@@ -13,14 +13,14 @@ use Yii;
  * @property string|null $nama_partai
  * @property string|null $keterangan
  */
-class TblPembayaran extends \yii\db\ActiveRecord
+class TblPemesanan extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'tbl_pembayaran';
+        return 'tbl_pemesanan';
     }
     /**
      * {@inheritdoc}
@@ -28,9 +28,9 @@ class TblPembayaran extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_pemesanan', 'jumlah', 'jumlah_diberikan', 'jumlah_kembalian', 'id_kasir'], 'integer'],
-            [['tipe_pembayaran', 'id_transaksi_qris', 'link_qris'], 'string'],
-            ['waktu_pembayaran', 'safe'],
+            [['id_meja', 'id_pelayan'], 'integer'],
+            [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid']],
+            ['waktu', 'safe'],
         ];
     }
 }

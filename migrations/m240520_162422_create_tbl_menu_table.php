@@ -14,7 +14,7 @@ class m240520_162422_create_tbl_menu_table extends Migration
     {
         $this->createTable('{{%tbl_menu}}', [
             'id' => $this->primaryKey(),
-            'nama' => $this->string(64),
+            'nama' => $this->string(),
             'id_kategori' => $this->integer()->notNull(),
             'harga' => $this->integer(),
             'path' => $this->text(),

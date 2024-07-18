@@ -6,6 +6,7 @@
         "yiisoft/yii2-imagine": "^2.3",
         "midtrans/midtrans-php": "^2.5"
     },
+   
     "repositories": [
         {
             "type": "composer",

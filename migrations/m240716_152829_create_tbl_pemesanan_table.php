@@ -16,7 +16,7 @@ class m240716_152829_create_tbl_pemesanan_table extends Migration
             'id' => $this->primaryKey(),
             'id_meja' => $this->integer()->notNull(), // (Foreign Key ke tabel Tables)
             'id_pelayan' => $this->integer()->notNull(), //(Foreign Key ke tabel Users)
-            'status' => $this->string(), //ordered, in_progress, ready, served, paid
+            'status' => "ENUM('ordered', 'in_progress','ready','served','paid')", //(available, occupied)
             'waktu' => $this->datetime(),
         ]);
         // add foreign key 
