@@ -28,7 +28,7 @@ class TblMenuBahanBaku extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_menu', 'id_bahan_baku'], 'integer'],
+            [['id_menu', 'id_bahan_baku', 'quantity'], 'integer'],
         ];
     }
 }

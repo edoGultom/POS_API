@@ -29,7 +29,7 @@ class TblBahanBaku extends \yii\db\ActiveRecord
     {
         return [
             [['nama'], 'string'],
-            [['quantity', 'id_unit_bahan_baku'], 'integer'],
+            [['id_unit_bahan_baku'], 'integer'],
         ];
     }
 }

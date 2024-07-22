@@ -16,6 +16,7 @@ class m240717_022251_create_tbl_menu_bahan_baku_table extends Migration
             'id' => $this->primaryKey(),
             'id_menu' => $this->integer(),
             'id_bahan_baku' => $this->integer(),
+            'quantity' => $this->integer(), //(Jumlah bahan baku yang digunakan per satuan menu item)
         ]);
         // add foreign key 
         $this->addForeignKey(

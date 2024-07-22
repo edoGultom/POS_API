@@ -2,9 +2,7 @@
 
 namespace app\controllers;
 
-use app\models\TblMenu;
-use app\models\UploadedFiledb;
-use app\models\UploadForm;
+use app\models\TblKategori;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -15,9 +13,8 @@ use filsh\yii2\oauth2server\filters\ErrorToExceptionFilter;
 use filsh\yii2\oauth2server\filters\auth\CompositeAuth;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
-use yii\web\UploadedFile;
 
-class MenuController extends Controller
+class KategoriController extends Controller
 {
     public $pesan = '';
     public $data = '';
@@ -46,21 +43,15 @@ class MenuController extends Controller
                 'actions' => [
                     'index'  => ['GET'],
                     'add'  => ['POST'],
-                    'update'  => ['POST'],
+                    'update'  => ['PUT'],
                     'delete'  => ['DELETE'],
-                    'test'  => ['GET'],
-
                 ],
             ],
         ]);
     }
-    public function actionTest()
-    {
-        return 'a';
-    }
     protected function findModel($id)
     {
-        $model = TblMenu::findOne($id);
+        $model = TblKategori::findOne($id);
         if ($model !== null) {
             return $model;
         }
@@ -68,7 +59,7 @@ class MenuController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblMenu::find()->all();
+        $model = TblKategori::find()->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -80,11 +71,11 @@ class MenuController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $menu = $this->findAllModel();
-            if ($menu) {
+            $model = $this->findAllModel();
+            if ($model) {
                 $transaction->commit();
                 $res['status'] = true;
-                $res['data'] = $menu;
+                $res['data'] = $model;
                 $res['message'] = 'Berhasil mengambil data!';
             }
         } catch (\Exception $e) {
@@ -102,42 +93,20 @@ class MenuController extends Controller
         $res = [];
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
-        $files = UploadedFile::getInstancesByName("file");
 
         try {
-            $menu = new TblMenu();
+            $model = new TblKategori();
             $data = $request->bodyParams; // Get the body of the request
-            $menu->load($data, '');
-            if ($menu->validate() &&  $menu->save()) {
-                if (!empty($files)) {
-                    $upload = new UploadForm();
-                    $upload->imageFilesMenu = $files;
-                    $resp = $upload->uploadFileMenu($menu->id);
-                    // return $resp;
-                    if (!$resp) {
-                        $this->status = false;
-                        $this->pesan = $resp;
-                    }
-                    $menu->path = $resp;
-                    if (!$menu->save()) {
-                        return [
-                            'status' => false,
-                            'message' => $menu->getErrors(),
-                        ];
-                    }
-                    $transaction->commit();
-                    $res['status'] = true;
-                    $res['message'] = 'Berhasil menambah data!';
-                    $res['data'] =  $this->findModel($menu->id);
-                } else {
-                    $res['status'] = false;
-                    $res['pesan'] = 'file kosong!';
-                }
+            $model->load($data, '');
+            if ($model->validate() &&  $model->save()) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['message'] = 'Berhasil menambah data!';
             } else {
                 return [
                     'status' => false,
-                    // 'message' => $menu->getRequiredAttributes()
-                    'message' => $menu->getErrors(),
+                    // 'message' => $model->getRequiredAttributes()
+                    'message' => $model->getErrors(),
                 ];
             }
         } catch (\Exception $e) {
@@ -155,38 +124,19 @@ class MenuController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         $data =  Yii::$app->request->getBodyParams();
-        $files = UploadedFile::getInstancesByName("file");
         try {
-            $menu =  $this->findModel($id);;
-            if ($menu) {
-                $menu->setAttributes($data); // Set the attributes manually
-                if ($menu->validate() && $menu->save()) {
-                    if (!empty($files)) {
-                        UploadedFiledb::find()->where(['filename' =>  $menu->path])->one()->delete();
-                        unlink(Yii::getAlias('@' . $menu->path));
-                        $upload = new UploadForm();
-                        $upload->imageFilesMenu = $files;
-                        $resp = $upload->uploadFileMenu($menu->id);
-                        if (!$resp) {
-                            $this->status = false;
-                            $this->pesan = $resp;
-                        }
-                        $menu->path = $resp;
-                        if (!$menu->save()) {
-                            return [
-                                'status' => false,
-                                'message' => $menu->getErrors(),
-                            ];
-                        }
-                    }
+            $model =  $this->findModel($id);
+            if ($model) {
+                $model->setAttributes($data, ''); // Set the attributes manually
+                if ($model->validate() &&  $model->save()) {
                     $transaction->commit();
                     $res['status'] = true;
                     $res['message'] = 'Berhasil merubah data!';
-                    $res['data'] = $this->findModel($id);
                 } else {
                     return [
                         'status' => false,
-                        'message' => $menu->getErrors(),
+                        'message' => $model->getErrors(),
+                        // 'message' => $model->getRequiredAttributes()
                     ];
                 }
             }
@@ -204,13 +154,10 @@ class MenuController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $menu =  $this->findModel($id);
-            UploadedFiledb::find()->where(['filename' =>  $menu->path])->one()->delete();
-            unlink(Yii::getAlias('@' . $menu->path));
-            if ($menu->delete()) {
+            $model =  $this->findModel($id);
+            if ($model->delete()) {
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menghapus data!';
-                // $res['data'] =  $this->findModel($id);
                 $transaction->commit();
             }
         } catch (\Exception $e) {

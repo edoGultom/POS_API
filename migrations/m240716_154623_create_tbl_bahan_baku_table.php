@@ -15,8 +15,7 @@ class m240716_154623_create_tbl_bahan_baku_table extends Migration
         $this->createTable('{{%tbl_bahan_baku}}', [
             'id' => $this->primaryKey(),
             'nama' => $this->text(),
-            'quantity' => $this->integer(),
-            'id_unit_bahan_baku' => $this->integer()->notNull(),
+            'id_unit_bahan_baku' => $this->integer()->notNull(), //(Satuan bahan baku, misalnya gram, liter)
         ]);
         // add foreign key 
         $this->addForeignKey(

@@ -29,7 +29,20 @@ class TblMeja extends \yii\db\ActiveRecord
     {
         return [
             [['nomor_meja'], 'string', 'max' => 255],
-            [['status'], 'in', 'range' => ['Available', 'Occopied']]
+            [['status'], 'in', 'range' => ['Available', 'Occupied']],
+            ['status', 'default', 'value' => 'Available']
         ];
+    }
+    // public function fields()
+    // {
+    //     $fields = parent::fields();
+    //     $fields['number']  = function ($model) {
+    //         return $this->maxNumber ?? 0;
+    //     };
+    //     return $fields;
+    // }
+    public function getMaxNumber()
+    {
+        return TblMeja::find()->max('id');
     }
 }

@@ -39,4 +39,16 @@ class TblMenu extends \yii\db\ActiveRecord
             [['id_kategori', 'harga', 'created_at', 'updated_at'], 'integer'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['nama_kategori']  = function ($model) {
+            return $this->kategori->nama_kategori ?? '';
+        };
+        return $fields;
+    }
+    public function getKategori()
+    {
+        return $this->hasOne(TblKategori::class, ['id' => 'id_kategori'])->orderBy(['id' => SORT_DESC]);
+    }
 }
