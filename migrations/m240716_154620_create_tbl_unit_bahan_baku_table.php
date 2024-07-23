@@ -25,6 +25,8 @@ class m240716_154620_create_tbl_unit_bahan_baku_table extends Migration
             [
                 ['ml'],
                 ['gram'],
+                ['buah'],
+                ['cup'],
             ]
         );
     }
