@@ -32,4 +32,16 @@ class TblBahanBaku extends \yii\db\ActiveRecord
             [['id_unit_bahan_baku'], 'integer'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['unit']  = function ($model) {
+            return $this->unit->nama ?? '';
+        };
+        return $fields;
+    }
+    public function getUnit()
+    {
+        return $this->hasOne(TblUnitBahanBaku::class, ['id' => 'id_unit_bahan_baku'])->orderBy(['id' => SORT_DESC]);
+    }
 }

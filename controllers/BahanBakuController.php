@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\TblBahanBaku;
+use app\models\TblUnitBahanBaku;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -46,7 +47,7 @@ class BahanBakuController extends Controller
                     'update'  => ['POST'],
                     'delete'  => ['DELETE'],
                     'test'  => ['GET'],
-
+                    'units'  => ['GET'],
                 ],
             ],
         ]);
@@ -66,6 +67,36 @@ class BahanBakuController extends Controller
             return $model;
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    protected function findAllModelUnit()
+    {
+        $model = TblUnitBahanBaku::find()->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    public function actionUnits()
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $meja = $this->findAllModelUnit();
+            if ($meja) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $meja;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
     }
     public function actionIndex()
     {

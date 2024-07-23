@@ -10,6 +10,7 @@ use app\models\ResetPasswordForm;
 use app\models\AuthAssignment;
 use app\models\OauthAccessTokens;
 use app\modelssearch\PasswordResetRequestForm;
+use DateTime;
 use filsh\yii2\oauth2server\filters\ErrorToExceptionFilter;
 
 
@@ -55,12 +56,7 @@ class UserController extends \yii\rest\Controller
             $data['user']['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
                 return str_replace(" ", "_", $m['item_name']);
             });
-
             $data['expires'] = strtotime($model->expires);
-            // $data['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
-            //     return str_replace(" ", "_", $m['item_name']);
-            // });
-
             $data['access_token'] = $result['access_token'];
             $data['token_type'] = $result['token_type'];
             $data['refresh_token'] = $result['refresh_token'];
@@ -79,9 +75,7 @@ class UserController extends \yii\rest\Controller
         $data = [];
 
         if (isset($result['access_token'])) {
-
             $model = OauthAccessTokens::find()->where(['access_token' => $result['access_token']])->one();
-            $user = User::find()->where(['id' => $model->user_id])->one();
             $data['user_id'] = $model->user_id;
 
             $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $model->user_id])->asArray()->all();
