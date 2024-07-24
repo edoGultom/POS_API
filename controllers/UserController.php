@@ -13,7 +13,6 @@ use app\modelssearch\PasswordResetRequestForm;
 use DateTime;
 use filsh\yii2\oauth2server\filters\ErrorToExceptionFilter;
 
-
 class UserController extends \yii\rest\Controller
 {
     public $pesan = '';
