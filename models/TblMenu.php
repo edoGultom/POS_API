@@ -45,10 +45,18 @@ class TblMenu extends \yii\db\ActiveRecord
         $fields['nama_kategori']  = function ($model) {
             return $this->kategori->nama_kategori ?? '';
         };
+        $fields['list_bahan_baku']  = function ($model) {
+            $data = $this->getMenuBahanBaku()->all();
+            return $data;
+        };
         return $fields;
     }
     public function getKategori()
     {
         return $this->hasOne(TblKategori::class, ['id' => 'id_kategori'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getMenuBahanBaku()
+    {
+        return $this->hasMany(TblMenuBahanBaku::class, ['id_menu' => 'id'])->orderBy(['id' => SORT_DESC]);
     }
 }

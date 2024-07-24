@@ -31,4 +31,24 @@ class TblMenuBahanBaku extends \yii\db\ActiveRecord
             [['id_menu', 'id_bahan_baku', 'quantity'], 'integer'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+
+        $fields['bahan_baku']  = function ($model) {
+            return $this->bahanBaku->nama ?? '';
+        };
+        $fields['unit']  = function ($model) {
+            return $this->bahanBaku->unit->nama ?? '';
+        };
+        return $fields;
+    }
+    public function getMenu()
+    {
+        return $this->hasOne(TblMenu::class, ['id' => 'id_menu'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getBahanBaku()
+    {
+        return $this->hasOne(TblBahanBaku::class, ['id' => 'id_bahan_baku'])->orderBy(['id' => SORT_DESC]);
+    }
 }
