@@ -68,6 +68,14 @@ class MenuBahanBakuController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
+    protected function findMenu($id)
+    {
+        $model = TblMenu::find()->joinWith('menuBahanBaku')->where('tbl_menu.id=' . $id)->one();
+        if ($model !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
 
     public function actionUnits()
     {
@@ -128,6 +136,7 @@ class MenuBahanBakuController extends Controller
                 $transaction->commit();
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menambah data!';
+                // $res['data'] =  $this->findMenu($model->id_menu);
                 $res['data'] =  $this->findModel($model->id);
             } else {
                 return [
