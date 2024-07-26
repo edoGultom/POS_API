@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\TblMenu;
+use app\models\TblTransaksiStok;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use Yii;
@@ -17,7 +18,7 @@ use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 use yii\web\UploadedFile;
 
-class StokController extends Controller
+class StockController extends Controller
 {
     public $pesan = '';
     public $data = '';
@@ -44,51 +45,72 @@ class StokController extends Controller
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => [
-                    'current-stock'  => ['GET'],
+                    'add-transaksi-stok'  => ['GET'],
+                    'index'  => ['GET'],
                 ],
             ],
         ]);
     }
-    protected function findCurrentStock()
+    protected function findModel($id)
     {
-        $model = Yii::$app->db->createCommand(
-            "
-            SELECT 
-                    b.nama_barang,
-                    COALESCE(SUM(CASE WHEN sb.tipe = 'initialstok' THEN sb.perubahan_stok ELSE 0 END), 0)as stok_awal,
-                    COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) AS masuk,
-                    COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0) AS keluar,
-                    (COALESCE(SUM(CASE WHEN sb.tipe = 'initialstok' THEN sb.perubahan_stok ELSE 0 END), 0) +
-                    COALESCE(SUM(CASE WHEN sb.tipe = 'addition' THEN sb.perubahan_stok ELSE 0 END), 0) +
-                    COALESCE(SUM(CASE WHEN sb.tipe = 'sales' THEN sb.perubahan_stok ELSE 0 END), 0)) AS stok_akhir
-            FROM 
-                    tbl_menu b
-            LEFT JOIN 
-                    tbl_stok_barang sb ON b.id = sb.id_barang
-            GROUP BY 
-                    b.id, b.nama_barang;
-            "
-        )->queryAll();
-        return array_values($model);
+        $model = TblTransaksiStok::findOne($id);
+        if ($model !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
-
-    public function actionCurrentStock()
+    protected function findAllModel()
+    {
+        $model = TblTransaksiStok::find()->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    public function actionIndex()
     {
         $res = [];
         $connection = Yii::$app->db;
-        $request = Yii::$app->request;
-        $model = $this->findCurrentStock();
-
         $transaction = $connection->beginTransaction();
         try {
+            $model = $this->findAllModel();
             if ($model) {
                 $transaction->commit();
                 $res['status'] = true;
                 $res['data'] = $model;
                 $res['message'] = 'Berhasil mengambil data!';
-            } else {
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionAdd()
+    {
+        $request = Yii::$app->request;
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+
+        try {
+            $model = new TblTransaksiStok();
+            $data = $request->bodyParams; // Get the body of the request
+            $model->load($data, '');
+            // $model->kode = $model->setKode();
+            if ($model->validate() &&  $model->save()) {
+                $transaction->commit();
                 $res['status'] = true;
-                $res['message'] = 'Data Kosong';
+                $res['message'] = 'Berhasil menambah data!';
+                $res['data'] =  $this->findModel($model->id);
+            } else {
+                return [
+                    'status' => false,
+                    'message' => $model->getErrors(),
+                ];
             }
         } catch (\Exception $e) {
             $transaction->rollBack();

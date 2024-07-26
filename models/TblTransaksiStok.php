@@ -30,7 +30,28 @@ class TblTransaksiStok extends \yii\db\ActiveRecord
         return [
             [['id_bahan_baku', 'quantity'], 'integer'],
             [['tipe'], 'in', 'range' => ['Masuk', 'Keluar']],
+            [['kode'], 'string'],
             ['waktu', 'safe']
         ];
+    }
+    public function setKode()
+    {
+        $lastId = TblTransaksiStok::find()->max('id');
+        return 'TS-' + sprintf("%04d", $lastId->id + 1);
+    }
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['bahan_baku']  = function ($model) {
+            return $this->bahanBaku->nama ?? '';
+        };
+        $fields['unit']  = function ($model) {
+            return $this->bahanBaku->unit->nama ?? '';
+        };
+        return $fields;
+    }
+    public function getBahanBaku()
+    {
+        return $this->hasOne(TblBahanBaku::class, ['id' => 'id_bahan_baku'])->orderBy(['id' => SORT_DESC]);
     }
 }
