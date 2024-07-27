@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\TblMenu;
 use app\models\TblTransaksiStok;
+use app\models\TblTransaksiStokBahanBaku;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use Yii;
@@ -46,7 +47,10 @@ class StockController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'add-transaction'  => ['POST'],
+                    'add-stock'  => ['POST'],
                     'update-transaction'  => ['POST'],
+                    'update-stock'  => ['POST'],
+                    'detail-stock'  => ['GET'],
                     'index'  => ['GET'],
                 ],
             ],
@@ -63,6 +67,22 @@ class StockController extends Controller
     protected function findAllModel()
     {
         $model = TblTransaksiStok::find()->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    protected function findModelStokBahanBaku($id)
+    {
+        $model = TblTransaksiStokBahanBaku::findOne($id);
+        if ($model !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    protected function findAllModelStokBahanBaku($id)
+    {
+        $model = TblTransaksiStokBahanBaku::find()->where(['id_transaksi_stok' => $id])->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -90,6 +110,7 @@ class StockController extends Controller
         }
         return $res;
     }
+
     public function actionAddTransaction()
     {
         $request = Yii::$app->request;
@@ -163,6 +184,111 @@ class StockController extends Controller
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menghapus data!';
                 // $res['data'] =  $this->findModel($id);
+                $transaction->commit();
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    // STOCK
+    public function actionDetailStock($id)
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $model = $this->findAllModelStokBahanBaku($id);
+            if ($model) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $model;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionAddStock()
+    {
+        $request = Yii::$app->request;
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+
+        try {
+            $model = new TblTransaksiStokBahanBaku();
+            $data = $request->bodyParams; // Get the body of the request
+            $model->load($data, '');
+            if ($model->validate() &&  $model->save()) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['message'] = 'Berhasil menambah data!';
+                $res['data'] =  $this->findModelStokBahanBaku($model->id);
+            } else {
+                return [
+                    'status' => false,
+                    'message' => $model->getErrors(),
+                ];
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionUpdateStock($id)
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        $data =  Yii::$app->request->getBodyParams();
+        try {
+            $table =  $this->findModelStokBahanBaku($id);;
+            if ($table) {
+                $table->setAttributes($data); // Set the attributes manually
+                if ($table->validate() && $table->save()) {
+                    $transaction->commit();
+                    $res['status'] = true;
+                    $res['message'] = 'Berhasil merubah data!';
+                    $res['data'] = $this->findModelStokBahanBaku($id);
+                } else {
+                    return [
+                        'status' => false,
+                        'message' => $table->getErrors(),
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionDeleteStock($id)
+    {
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $table =  $this->findModelStokBahanBaku($id);
+            if ($table->delete()) {
+                $res['status'] = true;
+                $res['message'] = 'Berhasil menghapus data!';
                 $transaction->commit();
             }
         } catch (\Exception $e) {
