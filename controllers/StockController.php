@@ -45,7 +45,8 @@ class StockController extends Controller
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => [
-                    'add-transaksi-stok'  => ['GET'],
+                    'add-transaction'  => ['POST'],
+                    'update-transaction'  => ['POST'],
                     'index'  => ['GET'],
                 ],
             ],
@@ -89,7 +90,7 @@ class StockController extends Controller
         }
         return $res;
     }
-    public function actionAdd()
+    public function actionAddTransaction()
     {
         $request = Yii::$app->request;
         $res = [];
@@ -100,7 +101,7 @@ class StockController extends Controller
             $model = new TblTransaksiStok();
             $data = $request->bodyParams; // Get the body of the request
             $model->load($data, '');
-            // $model->kode = $model->setKode();
+            $model->kode = $model->setKode();
             if ($model->validate() &&  $model->save()) {
                 $transaction->commit();
                 $res['status'] = true;
@@ -111,6 +112,58 @@ class StockController extends Controller
                     'status' => false,
                     'message' => $model->getErrors(),
                 ];
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionUpdateTransaction($id)
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        $data =  Yii::$app->request->getBodyParams();
+        try {
+            $table =  $this->findModel($id);;
+            if ($table) {
+                $table->setAttributes($data); // Set the attributes manually
+                if ($table->validate() && $table->save()) {
+                    $transaction->commit();
+                    $res['status'] = true;
+                    $res['message'] = 'Berhasil merubah data!';
+                    $res['data'] = $this->findModel($id);
+                } else {
+                    return [
+                        'status' => false,
+                        'message' => $table->getErrors(),
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionDeleteTransaction($id)
+    {
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $table =  $this->findModel($id);
+            if ($table->delete()) {
+                $res['status'] = true;
+                $res['message'] = 'Berhasil menghapus data!';
+                // $res['data'] =  $this->findModel($id);
+                $transaction->commit();
             }
         } catch (\Exception $e) {
             $transaction->rollBack();
