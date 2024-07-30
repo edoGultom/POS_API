@@ -8,11 +8,12 @@ use app\models\User;
 use yii\helpers\ArrayHelper;
 use app\models\ResetPasswordForm;
 use app\models\AuthAssignment;
+use app\models\AuthItem;
 use app\models\OauthAccessTokens;
-use app\modelssearch\PasswordResetRequestForm;
-use DateTime;
 use filsh\yii2\oauth2server\filters\ErrorToExceptionFilter;
-
+use yii\web\NotFoundHttpException;
+use OAuth2\Request;
+use OAuth2\Response as OAuth2Response; // Buat alias untuk Response
 class UserController extends \yii\rest\Controller
 {
     public $pesan = '';
@@ -34,6 +35,44 @@ class UserController extends \yii\rest\Controller
         ]);
     }
 
+    protected function findRoles()
+    {
+        $model = AuthItem::find()->where(['type' => 1])->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    public function actionRoles()
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $model = $this->findRoles();
+            if ($model) {
+                $newData = [];
+                foreach ($model as $item) {
+                    $newData[] = [
+                        'id' => $item->name,
+                        'nama' => $item->name
+                    ];
+                }
+
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $newData;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
     public function actionLogin()
     {
         $response = Yii::$app->getModule('oauth2')->getServer()->handleTokenRequest();
@@ -69,32 +108,16 @@ class UserController extends \yii\rest\Controller
 
     public function actionRefreshToken()
     {
-        $response = Yii::$app->getModule('oauth2')->getServer()->handleTokenRequest();
-        $result = $response->getParameters();
-        $data = [];
-
-        if (isset($result['access_token'])) {
-            $model = OauthAccessTokens::find()->where(['access_token' => $result['access_token']])->one();
-            $data['user_id'] = $model->user_id;
-
-            $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $model->user_id])->asArray()->all();
-            $data['expires'] = strtotime($model->expires);
-            $data['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
-                return str_replace(" ", "_", $m['item_name']);
-            });
-
-            $data['access_token'] = $result['access_token'];
-            $data['refresh_token'] = $result['refresh_token'];
-            $model->scope = implode(" ", $data['scope']);
-            $model->save();
-            return $data;
+        $response = new OAuth2Response(); // Gunakan alias di sini
+        $oauth2Server = Yii::$app->getModule('oauth2')->getServer();
+        $oauth2Server->handleTokenRequest(Request::createFromGlobals(), $response);
+        $res = $response->getParameters();
+        if (isset($res['access_token'])) {
+            return $res;
         }
         return false;
     }
-    public function actionTest()
-    {
-        return 'a';
-    }
+
     public function actionRegister()
     {
         $post = Yii::$app->request->post();
@@ -115,7 +138,6 @@ class UserController extends \yii\rest\Controller
             $user->auth_key = Yii::$app->security->generateRandomString();
             $user->username = $post['username'];
             $user->name = $post['name'];
-
             $user->email = $post['email'];
             $user->setPassword($post['password']);
             $user->generateAuthKey();
@@ -131,7 +153,7 @@ class UserController extends \yii\rest\Controller
                     'item_name',
                     'created_at'
                 ], [
-                    [$user->id, 'User', time()],
+                    [$user->id, $post['role'], time()],
                 ])->execute();
                 $transaction->commit();
                 $query = (new \yii\db\Query());
