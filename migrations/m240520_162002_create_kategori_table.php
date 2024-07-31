@@ -5,7 +5,7 @@ use yii\db\Migration;
 /**
  * Handles the creation of table `{{%kategori_barang}}`.
  */
-class m240520_162202_create_kategori_table extends Migration
+class m240520_162002_create_kategori_table extends Migration
 {
     /**
      * {@inheritdoc}
@@ -15,19 +15,15 @@ class m240520_162202_create_kategori_table extends Migration
         $this->createTable('{{%tbl_kategori}}', [
             'id' => $this->primaryKey(),
             'nama_kategori' => $this->string(255),
-            'created_at' => $this->integer(),
-            'updated_at' => $this->integer(),
         ]);
         $this->batchInsert(
             'tbl_kategori',
             [
                 'nama_kategori',
-                'created_at',
-                'updated_at'
             ],
             [
-                ['Makanan', time(), time()],
-                ['Minuman', time(), time()],
+                ['Makanan'],
+                ['Minuman'],
 
             ],
         );

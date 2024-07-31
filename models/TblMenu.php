@@ -36,7 +36,7 @@ class TblMenu extends \yii\db\ActiveRecord
         return [
             [['path'], 'string'],
             [['nama'], 'string', 'max' => 255],
-            [['id_kategori', 'harga', 'created_at', 'updated_at'], 'integer'],
+            [['id_kategori', 'id_sub_kategori', 'harga', 'created_at', 'updated_at'], 'integer'],
         ];
     }
     public function fields()
@@ -44,6 +44,9 @@ class TblMenu extends \yii\db\ActiveRecord
         $fields = parent::fields();
         $fields['nama_kategori']  = function ($model) {
             return $this->kategori->nama_kategori ?? '';
+        };
+        $fields['nama_sub_kategori']  = function ($model) {
+            return $this->subKategori->nama_sub_kategori ?? '';
         };
         $fields['list_bahan_baku']  = function ($model) {
             $data = $this->getMenuBahanBaku()->all();
@@ -54,6 +57,10 @@ class TblMenu extends \yii\db\ActiveRecord
     public function getKategori()
     {
         return $this->hasOne(TblKategori::class, ['id' => 'id_kategori'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getSubKategori()
+    {
+        return $this->hasOne(TblSubKategori::class, ['id' => 'id_sub_kategori'])->orderBy(['id' => SORT_DESC]);
     }
     public function getMenuBahanBaku()
     {

@@ -16,6 +16,7 @@ class m240520_162422_create_tbl_menu_table extends Migration
             'id' => $this->primaryKey(),
             'nama' => $this->string(),
             'id_kategori' => $this->integer()->notNull(),
+            'id_sub_kategori' => $this->integer()->notNull(),
             'harga' => $this->integer(),
             'path' => $this->text(),
             'created_at' => $this->integer(),
@@ -23,10 +24,19 @@ class m240520_162422_create_tbl_menu_table extends Migration
         ]);
         // add foreign key 
         $this->addForeignKey(
-            'fk-menu-id_kategori',
+            'fk-menus-id_kategori',
             'tbl_menu',
             'id_kategori',
             'tbl_kategori',
+            'id',
+            'CASCADE'
+        );
+        // add foreign key 
+        $this->addForeignKey(
+            'fk-menus-id_sub_kategori',
+            'tbl_menu',
+            'id_sub_kategori',
+            'tbl_sub_kategori',
             'id',
             'CASCADE'
         );

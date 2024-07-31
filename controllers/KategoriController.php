@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\TblKategori;
+use app\models\TblSubKategori;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -42,6 +43,7 @@ class KategoriController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'index'  => ['GET'],
+                    'sub'  => ['GET'],
                     'add'  => ['POST'],
                     'update'  => ['PUT'],
                     'delete'  => ['DELETE'],
@@ -65,6 +67,14 @@ class KategoriController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
+    protected function findAllModelSub()
+    {
+        $model = TblSubKategori::find()->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
     public function actionIndex()
     {
         $res = [];
@@ -72,6 +82,28 @@ class KategoriController extends Controller
         $transaction = $connection->beginTransaction();
         try {
             $model = $this->findAllModel();
+            if ($model) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $model;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionSub()
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $model = $this->findAllModelSub();
             if ($model) {
                 $transaction->commit();
                 $res['status'] = true;

@@ -34,8 +34,12 @@ class TblKategori extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['created_at', 'updated_at'], 'integer'],
+            // [['created_at', 'updated_at'], 'integer'],
             [['nama_kategori'], 'string', 'max' => 255],
         ];
+    }
+    public function getSubKategori()
+    {
+        return $this->hasMany(TblSubKategori::class, ['id_kategori' => 'id'])->orderBy(['id' => SORT_DESC]);
     }
 }
