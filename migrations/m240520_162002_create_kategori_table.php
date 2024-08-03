@@ -22,9 +22,8 @@ class m240520_162002_create_kategori_table extends Migration
                 'nama_kategori',
             ],
             [
-                ['Makanan'],
                 ['Minuman'],
-
+                ['Makanan'],
             ],
         );
     }

@@ -18,6 +18,7 @@ class m240520_162422_create_tbl_menu_table extends Migration
             'id_kategori' => $this->integer()->notNull(),
             'id_sub_kategori' => $this->integer()->notNull(),
             'harga' => $this->integer(),
+            'harga_ekstra' => $this->integer(),
             'path' => $this->text(),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),

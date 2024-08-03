@@ -4,6 +4,8 @@ namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
 use Yii;
+use yii\db\Exception;
+use yii\web\NotFoundHttpException;
 
 /**
  * This is the model class for table "partai".
@@ -18,13 +20,11 @@ class TblPemesanan extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    public $arrMenu;
     public static function tableName()
     {
         return 'tbl_pemesanan';
     }
-    /**
-     * {@inheritdoc}
-     */
     public function rules()
     {
         return [
@@ -32,5 +32,31 @@ class TblPemesanan extends \yii\db\ActiveRecord
             [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid']],
             ['waktu', 'safe'],
         ];
+    }
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+        if ($insert) {
+            $connection = Yii::$app->db;
+            $transaction = $connection->beginTransaction();
+            try {
+                foreach ($this->arrMenu as $value) {
+                    $model = new TblPemesananDetail();
+                    $model->id_pemesanan = $this->id;
+                    $model->id_menu = $value['id'];
+                    $model->quantity = $value['qty'];
+                    $model->temperatur = $value['temperatur'];
+                    $model->status = $this->status;
+                    if (!$model->save()) {
+                        throw new \Exception('Failed to save data');
+                    }
+                }
+
+                $transaction->commit();
+            } catch (Exception $e) {
+                $transaction->rollBack();
+                throw new Exception('Failed to save ordered: ' . $e->getMessage());
+            }
+        }
     }
 }

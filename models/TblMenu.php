@@ -36,7 +36,7 @@ class TblMenu extends \yii\db\ActiveRecord
         return [
             [['path'], 'string'],
             [['nama'], 'string', 'max' => 255],
-            [['id_kategori', 'id_sub_kategori', 'harga', 'created_at', 'updated_at'], 'integer'],
+            [['id_kategori', 'id_sub_kategori', 'harga', 'harga_ekstra', 'created_at', 'updated_at'], 'integer'],
         ];
     }
     public function fields()
