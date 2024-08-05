@@ -75,6 +75,24 @@ class OrderController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
+    protected function findAllModelOrderDetail($status)
+    {
+        $model = TblPemesananDetail::find();
+        if ($status === 'in_progress') {
+            $model->where(['status' => 'in_progress']);
+        } else if ($status === 'ordered') {
+            $model->where(['status' => 'ordered']);
+        } else if ($status === 'ready') {
+            $model->where(['status' => 'ready']);
+        } else if ($status === 'paid') {
+            $model->where(['status' => 'paid']);
+        }
+        $data = $model->all();
+        if (count($data) > 0) {
+            return $data;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
     public function actionIndex()
     {
         $res = [];
@@ -82,6 +100,28 @@ class OrderController extends Controller
         $transaction = $connection->beginTransaction();
         try {
             $table = $this->findAllModel();
+            if ($table) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $table;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionGetOrders($status)
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $table = $this->findAllModelOrderDetail($status);
             if ($table) {
                 $transaction->commit();
                 $res['status'] = true;

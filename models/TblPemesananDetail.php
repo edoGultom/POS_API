@@ -28,9 +28,21 @@ class TblPemesananDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_pemesanan', 'id_menu', 'quantity', 'id_chef'], 'integer'],
+            [['id_pemesanan', 'id_menu', 'quantity', 'harga', 'total', 'id_chef'], 'integer'],
             [['temperatur'], 'in', 'range' => ['HOT', 'COLD']],
             [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid']],
         ];
+    }
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['menu']  = function ($model) {
+            return $this->menu ?? '';
+        };
+        return $fields;
+    }
+    public function getMenu()
+    {
+        return $this->hasOne(TblMenu::class, ['id' => 'id_menu'])->orderBy(['id' => SORT_DESC]);
     }
 }

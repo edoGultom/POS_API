@@ -33,6 +33,14 @@ class TblPemesanan extends \yii\db\ActiveRecord
             ['waktu', 'safe'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['order_detail']  = function ($model) {
+            return $this->orderDetail ?? [];
+        };
+        return $fields;
+    }
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
@@ -45,6 +53,8 @@ class TblPemesanan extends \yii\db\ActiveRecord
                     $model->id_pemesanan = $this->id;
                     $model->id_menu = $value['id'];
                     $model->quantity = $value['qty'];
+                    $model->harga = $value['harga'] + $value['harga_ekstra'];
+                    $model->total = $value['totalHarga'];
                     $model->temperatur = $value['temperatur'];
                     $model->status = $this->status;
                     if (!$model->save()) {
@@ -58,5 +68,9 @@ class TblPemesanan extends \yii\db\ActiveRecord
                 throw new Exception('Failed to save ordered: ' . $e->getMessage());
             }
         }
+    }
+    public function getOrderDetail()
+    {
+        return $this->hasMany(TblPemesananDetail::class, ['id_pemesanan' => 'id'])->orderBy(['id' => SORT_DESC]);
     }
 }

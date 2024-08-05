@@ -17,6 +17,8 @@ class m240716_153220_create_tbl_pemesanan_detail_table extends Migration
             'id_pemesanan' => $this->integer()->notNull(),
             'id_menu' => $this->integer()->notNull(),
             'quantity' => $this->integer(),
+            'harga' => $this->integer(),
+            'total' => $this->integer(),
             'temperatur' => "ENUM('HOT', 'COLD')", //('ordered', 'in_progress','ready','served','paid')
             'status' => "ENUM('ordered', 'in_progress','ready','served','paid')", //('ordered', 'in_progress','ready','served','paid')
             'id_chef' => $this->integer(), // (Foreign Key ke tabel Users)
