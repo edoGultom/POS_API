@@ -87,7 +87,7 @@ class OrderController extends Controller
         } else if ($status === 'paid') {
             $model->where(['status' => 'paid']);
         }
-        $data = $model->all();
+        $data = $model->orderBy(['waktu' => SORT_ASC])->all();
         if (count($data) > 0) {
             return $data;
         }

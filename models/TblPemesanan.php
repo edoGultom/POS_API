@@ -36,6 +36,9 @@ class TblPemesanan extends \yii\db\ActiveRecord
     public function fields()
     {
         $fields = parent::fields();
+        $fields['pelayan']  = function ($model) {
+            return $this->user->name ?? '';
+        };
         $fields['order_detail']  = function ($model) {
             return $this->orderDetail ?? [];
         };
@@ -47,6 +50,9 @@ class TblPemesanan extends \yii\db\ActiveRecord
         };
         $fields['quantity']  = function ($model) {
             return $this->sumQty ?? 0;
+        };
+        $fields['waktu']  = function ($model) {
+            return Yii::$app->formatter->asDateTime($this->waktu, 'php:d-m-Y H:i:s');
         };
         return $fields;
     }
@@ -98,5 +104,9 @@ class TblPemesanan extends \yii\db\ActiveRecord
     public function getMeja()
     {
         return $this->hasOne(TblMeja::class, ['id' => 'id_meja'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getUser()
+    {
+        return $this->hasOne(User::class, ['id' => 'id_pelayan']);
     }
 }

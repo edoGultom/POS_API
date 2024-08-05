@@ -36,8 +36,8 @@ class TblMeja extends \yii\db\ActiveRecord
     // public function fields()
     // {
     //     $fields = parent::fields();
-    //     $fields['number']  = function ($model) {
-    //         return $this->maxNumber ?? 0;
+    //     $fields['isAvailable']  = function ($model) {
+    //         return $this->status==='Available' ? false;
     //     };
     //     return $fields;
     // }
