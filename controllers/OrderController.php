@@ -75,9 +75,9 @@ class OrderController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
-    protected function findAllModelOrderDetail($status)
+    protected function findAllModelOrder($status)
     {
-        $model = TblPemesananDetail::find();
+        $model = TblPemesanan::find();
         if ($status === 'in_progress') {
             $model->where(['status' => 'in_progress']);
         } else if ($status === 'ordered') {
@@ -121,7 +121,7 @@ class OrderController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $table = $this->findAllModelOrderDetail($status);
+            $table = $this->findAllModelOrder($status);
             if ($table) {
                 $transaction->commit();
                 $res['status'] = true;

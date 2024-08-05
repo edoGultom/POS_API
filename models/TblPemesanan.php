@@ -39,6 +39,15 @@ class TblPemesanan extends \yii\db\ActiveRecord
         $fields['order_detail']  = function ($model) {
             return $this->orderDetail ?? [];
         };
+        $fields['meja']  = function ($model) {
+            return $this->meja ?? '';
+        };
+        $fields['total']  = function ($model) {
+            return $this->sumOrderDetail ?? 0;
+        };
+        $fields['quantity']  = function ($model) {
+            return $this->sumQty ?? 0;
+        };
         return $fields;
     }
     public function afterSave($insert, $changedAttributes)
@@ -48,6 +57,11 @@ class TblPemesanan extends \yii\db\ActiveRecord
             $connection = Yii::$app->db;
             $transaction = $connection->beginTransaction();
             try {
+                $table = TblMeja::findOne(['id' => $this->id_meja]);
+                if ($table) {
+                    $table->status = 'Occupied';
+                    $table->save();
+                }
                 foreach ($this->arrMenu as $value) {
                     $model = new TblPemesananDetail();
                     $model->id_pemesanan = $this->id;
@@ -72,5 +86,17 @@ class TblPemesanan extends \yii\db\ActiveRecord
     public function getOrderDetail()
     {
         return $this->hasMany(TblPemesananDetail::class, ['id_pemesanan' => 'id'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getSumOrderDetail()
+    {
+        return $this->hasMany(TblPemesananDetail::class, ['id_pemesanan' => 'id'])->sum('total');
+    }
+    public function getSumQty()
+    {
+        return $this->hasMany(TblPemesananDetail::class, ['id_pemesanan' => 'id'])->sum('quantity');
+    }
+    public function getMeja()
+    {
+        return $this->hasOne(TblMeja::class, ['id' => 'id_meja'])->orderBy(['id' => SORT_DESC]);
     }
 }
