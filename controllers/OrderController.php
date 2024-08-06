@@ -137,6 +137,39 @@ class OrderController extends Controller
         }
         return $res;
     }
+    public function actionReadyOrder($status)
+    {
+        $request = Yii::$app->request;
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+
+        try {
+            $rawData = $request->getRawBody();
+            $data = json_decode($rawData, true);
+            $idOrder = $data['id_order'];
+            $model = TblPemesanan::findOne(['id' => $idOrder]);
+            if (!$model) {
+                throw new \Exception('Data Not Found');
+            }
+            $model->status = $status;
+            if (!$model->save()) {
+                throw new \Exception('Failed to save data');
+            }
+            TblPemesananDetail::updateAll(['status' => $status], ['id_pemesanan' => $idOrder]);
+            $transaction->commit();
+            $res['status'] = true;
+            $res['message'] = 'Berhasil menambah data!';
+            $res['data'] =  $this->findModel($model->id);
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' =>  $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
     public function actionProcessOrder($status)
     {
         $request = Yii::$app->request;
@@ -162,7 +195,6 @@ class OrderController extends Controller
                     throw new \Exception('Failed to save data');
                 }
             }
-
             $transaction->commit();
             $res['status'] = true;
             $res['message'] = 'Berhasil menambah data!';

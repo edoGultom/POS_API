@@ -33,6 +33,12 @@ class TblPemesanan extends \yii\db\ActiveRecord
             ['waktu', 'safe'],
         ];
     }
+    private function formatString($string)
+    {
+        $string = str_replace('_', ' ', $string);
+        $string = ucwords($string);
+        return $string;
+    }
     public function fields()
     {
         $fields = parent::fields();
@@ -53,6 +59,9 @@ class TblPemesanan extends \yii\db\ActiveRecord
         };
         $fields['waktu']  = function ($model) {
             return Yii::$app->formatter->asDateTime($this->waktu, 'php:d-m-Y H:i:s');
+        };
+        $fields['status']  = function ($model) {
+            return $this->formatString($this->status);
         };
         return $fields;
     }
