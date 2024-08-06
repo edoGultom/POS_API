@@ -43,4 +43,8 @@ class TblTransaksiStok extends \yii\db\ActiveRecord
 
         return 'TS-' . sprintf("%04d", (int)$lastId + 1);
     }
+    public function getTrxStock()
+    {
+        return $this->hasMany(TblTransaksiStokBahanBaku::class, ['id_transaksi_stok' => 'id']);
+    }
 }

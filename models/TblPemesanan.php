@@ -56,6 +56,56 @@ class TblPemesanan extends \yii\db\ActiveRecord
         };
         return $fields;
     }
+    public function saveBahanBaku($listBahanBaku)
+    {
+        $trxstok = TblTransaksiStok::findOne(['tipe' => 'Masuk', 'tanggal' => date("Y-m-d")]);
+        if (!$trxstok) {
+            throw new \Exception('Data Trx Not Found');
+        }
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $newTrx = new TblTransaksiStok();
+            $newTrx->kode = $newTrx->setKode();
+            $newTrx->tipe = 'Keluar';
+            $newTrx->tanggal = date('Y-m-d');
+            if (!$newTrx->save()) {
+                throw new Exception('Failed save trx stock: ' . print_r($newTrx->errors, true));
+            }
+
+            $bahanBaku = (array) $listBahanBaku;
+            $bahanBaku = array_map(function ($item) {
+                return (object) $item;
+            }, $bahanBaku);
+
+            foreach ($bahanBaku as $value) {
+                $stock = TblTransaksiStokBahanBaku::findOne([
+                    'id_transaksi_stok' => $trxstok->id,
+                    'id_bahan_baku' => $value->id_bahan_baku
+                ]);
+
+                if (!$stock) {
+                    throw new \Exception('Data Not Found');
+                }
+                if ($stock->quantity < $value->quantity) {
+                    throw new \Exception('Stock Tidak Cukup Harap Periksa Stock');
+                }
+                $model = new TblTransaksiStokBahanBaku();
+                $model->id_transaksi_stok = $newTrx->id;
+                $model->id_bahan_baku = $value->id_bahan_baku;
+                // $model->quantity = $stock->quantity - $value->quantity;
+                $model->quantity = -$value->quantity;
+                if (!$model->save()) {
+                    throw new Exception('Failed save stock: ' . print_r($model->errors, true));
+                }
+            }
+            $transaction->commit();
+            return true;
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            echo "Transaction failed: " . $e->getMessage() . "\n";
+            return false;
+        }
+    }
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
@@ -88,6 +138,16 @@ class TblPemesanan extends \yii\db\ActiveRecord
                 throw new Exception('Failed to save ordered: ' . $e->getMessage());
             }
         }
+    }
+    public function isAllChange($status)
+    {
+        $countPemesananDetail = count($this->getOrderDetail()->all());
+
+        $statusPemesananDetail = TblPemesananDetail::findAll([
+            'id_pemesanan' => $this->id,
+            'status' => $status
+        ]);
+        return $countPemesananDetail === count($statusPemesananDetail);
     }
     public function getOrderDetail()
     {

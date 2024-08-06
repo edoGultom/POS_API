@@ -33,11 +33,20 @@ class TblPemesananDetail extends \yii\db\ActiveRecord
             [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid']],
         ];
     }
+    private function formatString($string)
+    {
+        $string = str_replace('_', ' ', $string);
+        $string = ucwords($string);
+        return $string;
+    }
     public function fields()
     {
         $fields = parent::fields();
         $fields['menu']  = function ($model) {
             return $this->menu ?? '';
+        };
+        $fields['status']  = function ($model) {
+            return $this->formatString($this->status);
         };
         return $fields;
     }

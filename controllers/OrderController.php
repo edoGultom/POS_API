@@ -49,7 +49,9 @@ class OrderController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'index'  => ['GET'],
+                    'get-orders'  => ['GET'],
                     'add'  => ['POST'],
+                    'process-order'  => ['POST'],
                     'update'  => ['POST'],
                     'delete'  => ['DELETE'],
                     'test'  => ['GET'],
@@ -78,10 +80,8 @@ class OrderController extends Controller
     protected function findAllModelOrder($status)
     {
         $model = TblPemesanan::find();
-        if ($status === 'in_progress') {
-            $model->where(['status' => 'in_progress']);
-        } else if ($status === 'ordered') {
-            $model->where(['status' => 'ordered']);
+        if ($status === 'ordered' || $status === 'in_progress') {
+            $model->where(['IN', 'status', ['in_progress', 'ordered']]);
         } else if ($status === 'ready') {
             $model->where(['status' => 'ready']);
         } else if ($status === 'paid') {
@@ -133,6 +133,45 @@ class OrderController extends Controller
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionProcessOrder($status)
+    {
+        $request = Yii::$app->request;
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+
+        try {
+            $rawData = $request->getRawBody();
+            $data = json_decode($rawData, true);
+            $idOrder = $data['id_order'];
+            $idOrderDetail = $data['id_order_detail'];
+            $listBahanBaku = (object)$data['list_bahan_baku'];
+            $model = TblPemesanan::findOne(['id' => $idOrder]);
+            if (!$model) {
+                throw new \Exception('Data Not Found');
+            }
+            $model->saveBahanBaku($listBahanBaku, $status);
+            TblPemesananDetail::updateAll(['status' => $status], ['id' => $idOrderDetail]);
+            if ($model->isAllChange($status)) {
+                $model->status = $status;
+                if (!$model->save()) {
+                    throw new \Exception('Failed to save data');
+                }
+            }
+
+            $transaction->commit();
+            $res['status'] = true;
+            $res['message'] = 'Berhasil menambah data!';
+            $res['data'] =  $this->findModel($model->id);
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' =>  $e->getMessage(),
             ];
         }
         return $res;
