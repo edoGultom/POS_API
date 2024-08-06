@@ -163,14 +163,13 @@ class UserController extends \yii\rest\Controller
                 $command = $query->createCommand();
                 $data = $command->queryOne();
                 $hakAkses = AuthAssignment::find()->select(['item_name'])->where(['user_id' => $user->id])->asArray()->all();
-                $data['user']['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
+                $data['scope'] = ArrayHelper::getColumn($hakAkses, function ($m) {
                     return str_replace(" ", "_", $m['item_name']);
                 });
                 $this->data = $data;
                 $this->status = true;
                 $this->pesan = 'register berhasil';
             } else {
-                return 'a';
                 $this->status = false;
                 $this->pesan = $user->getErrors();
             }
