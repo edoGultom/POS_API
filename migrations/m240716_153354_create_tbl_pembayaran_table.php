@@ -21,7 +21,7 @@ class m240716_153354_create_tbl_pembayaran_table extends Migration
             'tipe_pembayaran' => $this->string(), //(cash, qris)
             'waktu_pembayaran' => $this->dateTime(),
             'id_kasir' => $this->integer()->notNull(),
-            'id_transaksi_qris' => $this->text()->notNull(), //ID Transaksi dari Payment Gateway
+            'id_transaksi_qris' => $this->text(), //ID Transaksi dari Payment Gateway
             'link_qris' => $this->text(), //link QRIS dari Payment Gateway
         ]);
         // add foreign key 

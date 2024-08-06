@@ -34,7 +34,7 @@ class m200925_085638_add_auth_item extends Migration
                     'Waiters', 1, NULL, NULL, NULL, time(), time()
                 ],
                 [
-                    'Casier', 1, NULL, NULL, NULL, time(), time()
+                    'Cashier', 1, NULL, NULL, NULL, time(), time()
                 ],
                 [
                     'Chef', 1, NULL, NULL, NULL, time(), time()

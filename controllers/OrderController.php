@@ -86,6 +86,8 @@ class OrderController extends Controller
             $model->where(['IN', 'status', ['in_progress', 'ordered']]);
         } else if ($status === 'ready') {
             $model->where(['status' => 'ready']);
+        } else if ($status === 'served') {
+            $model->where(['status' => 'served']);
         } else if ($status === 'paid') {
             $model->where(['status' => 'paid']);
         }
