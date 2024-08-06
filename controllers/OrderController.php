@@ -53,7 +53,7 @@ class OrderController extends Controller
                     'add'  => ['POST'],
                     'process-order'  => ['POST'],
                     'ready-order'  => ['POST'],
-                    'serverd-order'  => ['POST'],
+                    'served-order'  => ['POST'],
                     'update'  => ['POST'],
                     'delete'  => ['DELETE'],
                     'test'  => ['GET'],
