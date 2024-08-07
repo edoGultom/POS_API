@@ -30,7 +30,7 @@ class TblPemesananDetail extends \yii\db\ActiveRecord
         return [
             [['id_pemesanan', 'id_menu', 'quantity', 'harga', 'total', 'id_chef'], 'integer'],
             [['temperatur'], 'in', 'range' => ['HOT', 'COLD']],
-            [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid']],
+            [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid', 'pending payment', 'expired payment', 'canceled payment']],
         ];
     }
     private function formatString($string)

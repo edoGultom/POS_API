@@ -53,13 +53,17 @@ class MidtransNotification extends Component
     public function checkout($orderID, $totalBayar, $tblPembayaran)
     {
         $itemDetails = $this->generateItemDetails($tblPembayaran);
+        // echo "<pre>";
+        // print_r($itemDetails);
+        // echo "</pre>";
+        // exit();
         $customerDetails = $this->generateCustomerDetails();
         \Midtrans\Config::$isProduction = $this->isProduction;
         \Midtrans\Config::$serverKey = $this->serverKey;
 
         $params = array(
             'transaction_details' => array(
-                'order_id' => $orderID,
+                'order_id' => 'Order-IDS-' . date('Y-m-d h:i:s') . '-' . $orderID,
                 'gross_amount' => $totalBayar,
             ),
             'payment_type' => 'qris',
@@ -70,10 +74,7 @@ class MidtransNotification extends Component
             // ),
             'enabled_payments' => array('other_qris')
         );
-        // echo "<pre>";
-        // print_r($params);
-        // echo "</pre>";
-        // exit();
+
         $response = '';
         try {
             $response = \Midtrans\CoreApi::charge($params);

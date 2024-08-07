@@ -29,7 +29,7 @@ class TblPemesanan extends \yii\db\ActiveRecord
     {
         return [
             [['id_meja', 'id_pelayan'], 'integer'],
-            [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid']],
+            [['status'], 'in', 'range' => ['ordered', 'in_progress', 'ready', 'served', 'paid', 'pending payment', 'expired payment', 'canceled payment']],
             ['waktu', 'safe'],
         ];
     }

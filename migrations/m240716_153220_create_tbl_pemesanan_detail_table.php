@@ -20,7 +20,7 @@ class m240716_153220_create_tbl_pemesanan_detail_table extends Migration
             'harga' => $this->integer(),
             'total' => $this->integer(),
             'temperatur' => "ENUM('HOT', 'COLD')", //('ordered', 'in_progress','ready','served','paid')
-            'status' => "ENUM('ordered', 'in_progress','ready','served','paid')", //('ordered', 'in_progress','ready','served','paid')
+            'status' => "ENUM('ordered', 'in_progress','ready','served','paid','pending payment','expired payment','canceled payment')", //('ordered', 'in_progress','ready','served','paid')
             'id_chef' => $this->integer(), // (Foreign Key ke tabel Users)
         ]);
 

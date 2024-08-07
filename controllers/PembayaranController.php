@@ -88,37 +88,23 @@ class PembayaranController extends Controller
             $pembayaran->id_pemesanan = $idPemesanan;
             $pembayaran->jumlah = $totalBayar;
             $pembayaran->tipe_pembayaran = $metode_pembayaran;
-            $pembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
+            // $pembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
             $pembayaran->id_kasir = Yii::$app->user->identity->id;
 
-            //    PEMMBAYARAN MIDTRANS
             if ($metode_pembayaran === 'qris') {
                 $dataArr = (array) $cartList;
                 $dataArr = array_map(function ($item) {
                     return (object) $item;
                 }, $dataArr);
-
                 $midtransResp = Yii::$app->midtrans->checkout($idPemesanan, $totalBayar, $dataArr);
-                echo "<pre>";
-                print_r($midtransResp);
-                echo "</pre>";
-                exit();
-                // END PEMBAYARA MIDTRANS
                 if ($midtransResp->status_code == '201') {
                     $pembayaran->id_transaksi_qris = $midtransResp->transaction_id;
                     $actions = $midtransResp->actions[0];
-                    // return $actions->url;
                     $pembayaran->link_qris = $actions->url;
                     if (!$pembayaran->save()) {
                         $transaction->rollBack();
                         throw new Exception('Failed to save pembayaran ');
                     }
-                    $pemesanan = TblPemesanan::findOne(['id' => $idPemesanan]);
-                    $pemesanan->status = 'paid';
-                    if (!$pemesanan->save()) {
-                        throw new Exception('Data Not found');
-                    }
-                    TblPemesananDetail::updateAll(['status' => 'paid'], ['id_pemesanan' => $idPemesanan]);
 
                     $transaction->commit();
                     return [
