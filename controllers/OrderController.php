@@ -228,7 +228,7 @@ class OrderController extends Controller
             if (!$model) {
                 throw new \Exception('Data Not Found');
             }
-            $model->saveBahanBaku($listBahanBaku, $status);
+            $model->restokBahan($listBahanBaku, $status);
             TblPemesananDetail::updateAll(['status' => $status], ['id' => $idOrderDetail]);
             if ($model->isAllChange($status)) {
                 $model->status = $status;

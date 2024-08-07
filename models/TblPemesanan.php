@@ -65,7 +65,7 @@ class TblPemesanan extends \yii\db\ActiveRecord
         };
         return $fields;
     }
-    public function saveBahanBaku($listBahanBaku)
+    public function restokBahan($listBahanBaku)
     {
         $trxstok = TblTransaksiStok::findOne(['tipe' => 'Masuk', 'tanggal' => date("Y-m-d")]);
         if (!$trxstok) {
@@ -73,7 +73,10 @@ class TblPemesanan extends \yii\db\ActiveRecord
         }
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            $newTrx = new TblTransaksiStok();
+            $newTrx =  TblTransaksiStok::findOne(['tipe' => 'Keluar', 'tanggal' => date("Y-m-d")]);
+            if (!$newTrx) {
+                $newTrx = new TblTransaksiStok();
+            }
             $newTrx->kode = $newTrx->setKode();
             $newTrx->tipe = 'Keluar';
             $newTrx->tanggal = date('Y-m-d');
