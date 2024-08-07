@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\TblMeja;
 use app\models\TblPembayaran;
 use app\models\TblPemesanan;
 use app\models\TblPemesananDetail;
@@ -56,6 +57,7 @@ class VerifyController extends Controller
             if (!$pemesanan->save()) {
                 throw new Exception('Failed update pemesanan');
             }
+            TblMeja::updateAll(['status' => 'Available'], ['id' => $pemesanan->id_meja]);
             TblPemesananDetail::updateAll(['status' => $status], ['id_pemesanan' => $tblPembayaran->id_pemesanan]);
         }
         return [
