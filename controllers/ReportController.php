@@ -55,27 +55,31 @@ class ReportController extends Controller
         $model = Yii::$app->db->createCommand(
             "
             SELECT 
-                DATE_FORMAT(FROM_UNIXTIME(s.created_at), '%Y-%m-%d') AS date, -- Format timestamp ke YYYY-MM-DD
-                p.id AS product_id, -- ID produk
-                p.nama_barang AS product_name, -- Nama produk
-                SUM(si.qty) AS total_quantity_sold, -- Total kuantitas yang terjual
-                SUM(si.harga * si.qty) AS total_sales_amount, -- Total penjualan dalam nilai uang
-                SUM(CASE WHEN py.payment_method = 'CASH' THEN si.harga * si.qty ELSE 0 END) AS cash_sales, -- Total penjualan tunai
-                SUM(CASE WHEN py.payment_method = 'QRIS' THEN si.harga * si.qty ELSE 0 END) AS qris_sales -- Total penjualan via QRIS
+                DATE(tts.tanggal) AS tanggal,
+                tbb.nama AS nama_bahan_baku,
+                tubb.nama satuan,
+                SUM(CASE WHEN tts.tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) AS total_masuk,
+                SUM(CASE WHEN tts.tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END) AS total_keluar,
+                (
+                    SUM(CASE WHEN tts.tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) +
+                    SUM(CASE WHEN tts.tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END)
+                ) AS saldo_akhir
             FROM 
-                tbl_penjualan s
-            JOIN 
-                tbl_penjualan_barang si ON s.id = si.id_penjualan -- Gabung tabel Sales dan Sale_Items
-            JOIN 
-                tbl_menu p ON si.id_barang = p.id -- Gabung tabel Sale_Items dan Products
-            LEFT JOIN 
-                tbl_pembayaran py ON s.id = py.id_penjualan -- Gabung tabel Sales dan Payments
-            WHERE 
-                DATE(FROM_UNIXTIME(s.created_at)) BETWEEN '$start' AND '$end' -- Filter berdasarkan tanggal
+                tbl_transaksi_stok_bahan_baku ttsbb
+            INNER JOIN
+                tbl_transaksi_stok tts on tts.id=ttsbb.id_transaksi_stok
+            INNER JOIN 
+                tbl_menu_bahan_baku tmbb ON tmbb.id_bahan_baku = ttsbb.id_bahan_baku
+            INNER JOIN 
+                tbl_bahan_baku tbb ON ttsbb.id_bahan_baku = tbb.id
+            INNER JOIN 
+                tbl_menu tm ON tm.id = tmbb.id_menu
+            INNER JOIN 
+		        tbl_unit_bahan_baku tubb on tubb.id = tbb.id_unit_bahan_baku
+            WHERE tts.tanggal  BETWEEN '$start' AND '$end'
             GROUP BY 
-                DATE_FORMAT(FROM_UNIXTIME(s.created_at), '%Y-%m-%d'), p.id, p.nama_barang -- Kelompokkan berdasarkan tanggal, ID produk, dan nama produk
-            ORDER BY 
-                DATE_FORMAT(FROM_UNIXTIME(s.created_at), '%Y-%m-%d'), p.id; -- Urutkan berdasarkan tanggal dan ID produk
+                DATE(tts.tanggal),
+                    ttsbb.id_bahan_baku
             "
         )->queryAll();
         return array_values($model);
