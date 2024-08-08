@@ -119,6 +119,34 @@ class ReportController extends Controller
         )->queryAll();
         return array_values($model);
     }
+    protected function findPenjualanByDateRange($start, $end)
+    {
+        $model = Yii::$app->db->createCommand(
+            "
+            SELECT 
+                DATE(tp.waktu) AS tanggal,
+                tm.nama AS menu,
+                tpd.temperatur as temperatur,
+                tm.harga as harga,
+                SUM(tpd.quantity) AS qty,
+                SUM(tpd.total) AS total
+            FROM 
+                tbl_pemesanan_detail tpd
+            JOIN 
+                tbl_pemesanan tp ON tpd.id_pemesanan = tp.id
+            JOIN 
+                tbl_menu tm ON tpd.id_menu = tm.id
+            WHERE 
+                tp.status = 'paid' -- Menghitung hanya pesanan yang sudah dibayar
+            AND
+                DATE(tp.waktu)  BETWEEN '$start' AND '$end'
+            GROUP BY 
+                DATE(tp.waktu), tm.nama
+            ORDER BY 
+                tanggal, menu; "
+        )->queryAll();
+        return array_values($model);
+    }
     protected function findPenjualanByDate($date)
     {
         $model = Yii::$app->db->createCommand(
@@ -175,6 +203,8 @@ class ReportController extends Controller
         )->queryAll();
         return array_values($model);
     }
+
+
     protected function findAllModel()
     {
         $model = TblMenu::find()->all();
@@ -250,7 +280,7 @@ class ReportController extends Controller
         $data = $request->bodyParams; // Get the body of the request
         $dateStart = $data['start'];
         $dateEnd = $data['end'];
-        $model = $this->findByDateRange($dateStart, $dateEnd);
+        $model = $this->findPenjualanByDateRange($dateStart, $dateEnd);
 
         $transaction = $connection->beginTransaction();
         try {
