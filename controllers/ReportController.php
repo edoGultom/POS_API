@@ -44,77 +44,120 @@ class ReportController extends Controller
             'verbs' => [
                 'class' => VerbFilter::class,
                 'actions' => [
-                    'by-date-range'  => ['POST'],
-                    'by-date'  => ['POST'],
+                    'stok-by-date-range'  => ['POST'],
+                    'stok-by-date'  => ['POST'],
                     'penjualan-by-date-range'  => ['POST'],
                     'penjuakan-by-date'  => ['POST'],
                 ],
             ],
         ]);
     }
-    protected function findByDateRange($start, $end)
+    protected function findStokByDateRange($start, $end)
     {
         $model = Yii::$app->db->createCommand(
             "
             SELECT 
-                DATE(tts.tanggal) AS tanggal,
-                tbb.nama AS nama_bahan_baku,
-                tubb.nama satuan,
-                SUM(CASE WHEN tts.tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) AS total_masuk,
-                SUM(CASE WHEN tts.tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END) AS total_keluar,
+                DATE(tp.waktu) AS tanggal,
+                tm.nama AS menu,
+                tbb.id AS id_bahan_baku,
+                tbb.nama AS bahan_baku,
+                tubb.nama AS satuan,
                 (
-                    SUM(CASE WHEN tts.tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) +
-                    SUM(CASE WHEN tts.tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END)
-                ) AS saldo_akhir
+                    SELECT 
+                        SUM(CASE WHEN tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) 
+                    FROM 
+                        tbl_transaksi_stok tts
+                        INNER JOIN tbl_transaksi_stok_bahan_baku ttsbb ON tts.id = ttsbb.id_transaksi_stok
+                    WHERE 
+                        ttsbb.id_bahan_baku = tbb.id
+                        AND  DATE(tts.tanggal) <= DATE(tp.waktu)
+                ) AS stok_awal,
+                SUM(tpd.quantity * tmbb.quantity) AS total_qty_terpakai,
+                    (
+                    SELECT 
+                        SUM(CASE WHEN tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) +
+                        SUM(CASE WHEN tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END)
+                    FROM 
+                        tbl_transaksi_stok tts
+                        INNER JOIN tbl_transaksi_stok_bahan_baku ttsbb ON tts.id = ttsbb.id_transaksi_stok
+                    WHERE 
+                        ttsbb.id_bahan_baku = tbb.id
+                        AND DATE(tts.tanggal) <= DATE(tp.waktu)
+                ) AS stok_akhir
             FROM 
-                tbl_transaksi_stok_bahan_baku ttsbb
-            INNER JOIN
-                tbl_transaksi_stok tts on tts.id=ttsbb.id_transaksi_stok
-            INNER JOIN 
-                tbl_menu_bahan_baku tmbb ON tmbb.id_bahan_baku = ttsbb.id_bahan_baku
-            INNER JOIN 
-                tbl_bahan_baku tbb ON ttsbb.id_bahan_baku = tbb.id
-            INNER JOIN 
-                tbl_menu tm ON tm.id = tmbb.id_menu
-            INNER JOIN 
-		        tbl_unit_bahan_baku tubb on tubb.id = tbb.id_unit_bahan_baku
-            WHERE tts.tanggal  BETWEEN '$start' AND '$end'
+                tbl_pemesanan_detail tpd
+            JOIN 
+                tbl_pemesanan tp ON tpd.id_pemesanan = tp.id
+            JOIN 
+                tbl_menu tm ON tpd.id_menu = tm.id
+            JOIN 
+                tbl_menu_bahan_baku tmbb ON tm.id = tmbb.id_menu
+            JOIN 
+                tbl_bahan_baku tbb ON tmbb.id_bahan_baku = tbb.id
+            JOIN 
+                tbl_unit_bahan_baku tubb ON tubb.id = tbb.id_unit_bahan_baku
+            WHERE 
+                tp.status = 'paid' -- Menghitung hanya pesanan yang sudah dibayar
+                and DATE(tp.waktu) BETWEEN '$start' AND '$end'
             GROUP BY 
-                DATE(tts.tanggal),
-                    ttsbb.id_bahan_baku
-            "
+                DATE(tp.waktu), tm.nama, tbb.nama
+            ORDER BY 
+                tanggal, menu, raw_material;
+        "
         )->queryAll();
         return array_values($model);
     }
-    protected function findByDate($date)
+    protected function findStokByDate($date)
     {
         $model = Yii::$app->db->createCommand(
-            " SELECT 
-                DATE(tts.tanggal) AS tanggal,
-                tbb.nama AS nama_bahan_baku,
-                	tubb.nama satuan,
-                SUM(CASE WHEN tts.tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) AS total_masuk,
-                SUM(CASE WHEN tts.tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END) AS total_keluar,
+            " 
+            SELECT 
+                DATE(tp.waktu) AS tanggal,
+                tm.nama AS menu,
+                tbb.id AS id_bahan_baku,
+                tbb.nama AS bahan_baku,
+                tubb.nama AS satuan,
                 (
-                    SUM(CASE WHEN tts.tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) +
-                    SUM(CASE WHEN tts.tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END)
-                ) AS saldo_akhir
+                    SELECT 
+                        SUM(CASE WHEN tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) 
+                    FROM 
+                        tbl_transaksi_stok tts
+                        INNER JOIN tbl_transaksi_stok_bahan_baku ttsbb ON tts.id = ttsbb.id_transaksi_stok
+                    WHERE 
+                        ttsbb.id_bahan_baku = tbb.id
+                        AND  DATE(tts.tanggal) <= DATE(tp.waktu)
+                ) AS stok_awal,
+                SUM(tpd.quantity * tmbb.quantity) AS total_qty_terpakai,
+                    (
+                    SELECT 
+                        SUM(CASE WHEN tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) +
+                        SUM(CASE WHEN tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END)
+                    FROM 
+                        tbl_transaksi_stok tts
+                        INNER JOIN tbl_transaksi_stok_bahan_baku ttsbb ON tts.id = ttsbb.id_transaksi_stok
+                    WHERE 
+                        ttsbb.id_bahan_baku = tbb.id
+                        AND DATE(tts.tanggal) <= DATE(tp.waktu)
+                ) AS stok_akhir
             FROM 
-                tbl_transaksi_stok_bahan_baku ttsbb
-            INNER JOIN
-                tbl_transaksi_stok tts on tts.id=ttsbb.id_transaksi_stok
-            INNER JOIN 
-                tbl_menu_bahan_baku tmbb ON tmbb.id_bahan_baku = ttsbb.id_bahan_baku
-            INNER JOIN 
-                tbl_bahan_baku tbb ON ttsbb.id_bahan_baku = tbb.id
-            INNER JOIN 
-                tbl_menu tm ON tm.id = tmbb.id_menu
-            INNER JOIN 
-		        tbl_unit_bahan_baku tubb on tubb.id = tbb.id_unit_bahan_baku
-            WHERE tts.tanggal ='$date' 
+                tbl_pemesanan_detail tpd
+            JOIN 
+                tbl_pemesanan tp ON tpd.id_pemesanan = tp.id
+            JOIN 
+                tbl_menu tm ON tpd.id_menu = tm.id
+            JOIN 
+                tbl_menu_bahan_baku tmbb ON tm.id = tmbb.id_menu
+            JOIN 
+                tbl_bahan_baku tbb ON tmbb.id_bahan_baku = tbb.id
+            JOIN 
+                tbl_unit_bahan_baku tubb ON tubb.id = tbb.id_unit_bahan_baku
+            WHERE 
+                tp.status = 'paid' -- Menghitung hanya pesanan yang sudah dibayar
+                and DATE(tp.waktu)='$date'
             GROUP BY 
-                DATE(tts.tanggal),
-                    ttsbb.id_bahan_baku
+                DATE(tp.waktu), tm.nama, tbb.nama
+            ORDER BY 
+                tanggal, menu, bahan_baku;
             "
         )->queryAll();
         return array_values($model);
@@ -203,6 +246,60 @@ class ReportController extends Controller
         )->queryAll();
         return array_values($model);
     }
+    protected function findStokByDateMax($date)
+    {
+        $model = Yii::$app->db->createCommand(
+            "
+            SELECT 
+                DATE(tp.waktu) AS tanggal,
+                tm.nama AS menu,
+                tbb.id AS id_bahan_baku,
+                tbb.nama AS bahan_baku,
+                tubb.nama AS satuan,
+                (
+                    SELECT 
+                        SUM(CASE WHEN tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) 
+                    FROM 
+                        tbl_transaksi_stok tts
+                        INNER JOIN tbl_transaksi_stok_bahan_baku ttsbb ON tts.id = ttsbb.id_transaksi_stok
+                    WHERE 
+                        ttsbb.id_bahan_baku = tbb.id
+                        AND  DATE(tts.tanggal) <= DATE(tp.waktu)
+                ) AS stok_awal,
+                SUM(tpd.quantity * tmbb.quantity) AS total_qty_terpakai,
+                    (
+                    SELECT 
+                        SUM(CASE WHEN tipe = 'masuk' THEN ttsbb.quantity ELSE 0 END) +
+                        SUM(CASE WHEN tipe = 'keluar' THEN ttsbb.quantity ELSE 0 END)
+                    FROM 
+                        tbl_transaksi_stok tts
+                        INNER JOIN tbl_transaksi_stok_bahan_baku ttsbb ON tts.id = ttsbb.id_transaksi_stok
+                    WHERE 
+                        ttsbb.id_bahan_baku = tbb.id
+                        AND DATE(tts.tanggal) <= DATE(tp.waktu)
+                ) AS stok_akhir
+            FROM 
+                tbl_pemesanan_detail tpd
+            JOIN 
+                tbl_pemesanan tp ON tpd.id_pemesanan = tp.id
+            JOIN 
+                tbl_menu tm ON tpd.id_menu = tm.id
+            JOIN 
+                tbl_menu_bahan_baku tmbb ON tm.id = tmbb.id_menu
+            JOIN 
+                tbl_bahan_baku tbb ON tmbb.id_bahan_baku = tbb.id
+            JOIN 
+                tbl_unit_bahan_baku tubb ON tubb.id = tbb.id_unit_bahan_baku
+            WHERE 
+                tp.status = 'paid' -- Menghitung hanya pesanan yang sudah dibayar
+                and DATE(tp.waktu)<='$date'
+            GROUP BY 
+                DATE(tp.waktu), tm.nama, tbb.nama
+            ORDER BY 
+                tanggal, menu, bahan_baku;"
+        )->queryAll();
+        return array_values($model);
+    }
 
 
     protected function findAllModel()
@@ -213,7 +310,7 @@ class ReportController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
-    public function actionByDateRange()
+    public function actionStokByDateRange()
     {
         $res = [];
         $connection = Yii::$app->db;
@@ -221,7 +318,7 @@ class ReportController extends Controller
         $data = $request->bodyParams; // Get the body of the request
         $dateStart = $data['start'];
         $dateEnd = $data['end'];
-        $model = $this->findByDateRange($dateStart, $dateEnd);
+        $model = $this->findStokByDateRange($dateStart, $dateEnd);
 
         $transaction = $connection->beginTransaction();
         try {
@@ -243,14 +340,18 @@ class ReportController extends Controller
         }
         return $res;
     }
-    public function actionByDate()
+    public function actionStokByDate()
     {
         $res = [];
         $connection = Yii::$app->db;
         $request = Yii::$app->request;
         $data = $request->bodyParams; // Get the body of the request
         $date = $data['date'];
-        $model = $this->findByDate($date);
+        $model = $this->findStokByDate($date);
+
+        if ($data >= date('Y-m-d')) {
+            $model = $this->findStokByDateMax($date);
+        }
 
         $transaction = $connection->beginTransaction();
         try {

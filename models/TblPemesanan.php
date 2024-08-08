@@ -67,12 +67,21 @@ class TblPemesanan extends \yii\db\ActiveRecord
     }
     public function restokBahan($listBahanBaku)
     {
-        $trxstok = TblTransaksiStok::findOne(['tipe' => 'Masuk', 'tanggal' => date("Y-m-d")]);
-        if (!$trxstok) {
+        $iDs = array_column(TblTransaksiStok::find()->select('id')->where(['tanggal' => date("Y-m-d")])->asArray()->all(), 'id');
+
+        if (!$iDs) {
             throw new \Exception('Data Stok Tidak Ditemukan');
         }
         $transaction = Yii::$app->db->beginTransaction();
+        $idNewTrx = null;
+
         try {
+            $bahanBaku = (array) $listBahanBaku;
+            $bahanBaku = array_map(function ($item) {
+                return (object) $item;
+            }, $bahanBaku);
+
+            // SAVE TRX FIRST
             $newTrx =  TblTransaksiStok::findOne(['tipe' => 'Keluar', 'tanggal' => date("Y-m-d")]);
             if (!$newTrx) {
                 $newTrx = new TblTransaksiStok();
@@ -80,43 +89,58 @@ class TblPemesanan extends \yii\db\ActiveRecord
             $newTrx->kode = $newTrx->setKode();
             $newTrx->tipe = 'Keluar';
             $newTrx->tanggal = date('Y-m-d');
+            //END SAVE TRX FIRST
             if (!$newTrx->save()) {
                 throw new Exception('Gagal Simpan Stok: ' . print_r($newTrx->errors, true));
             }
+            $idNewTrx = $newTrx->id;
 
-            $bahanBaku = (array) $listBahanBaku;
-            $bahanBaku = array_map(function ($item) {
-                return (object) $item;
-            }, $bahanBaku);
-
-            foreach ($bahanBaku as $value) {
-                $stock = TblTransaksiStokBahanBaku::findOne([
-                    'id_transaksi_stok' => $trxstok->id,
-                    'id_bahan_baku' => $value->id_bahan_baku
-                ]);
-
-                if (!$stock) {
-                    throw new \Exception('Data Not Found');
-                }
-                if ($stock->quantity < $value->quantity) {
-                    throw new \Exception('Stock Tidak Cukup Harap Periksa Stock');
-                }
-                $model = new TblTransaksiStokBahanBaku();
-                $model->id_transaksi_stok = $newTrx->id;
-                $model->id_bahan_baku = $value->id_bahan_baku;
-                // $model->quantity = $stock->quantity - $value->quantity;
-                $model->quantity = -$value->quantity;
-                if (!$model->save()) {
-                    throw new Exception('Failed save stock: ' . print_r($model->errors, true));
-                }
-            }
             $transaction->commit();
-            return true;
         } catch (Exception $e) {
             $transaction->rollBack();
             echo "Transaction failed: " . $e->getMessage() . "\n";
             return false;
         }
+
+        if ($transaction::READ_COMMITTED) {
+            foreach ($bahanBaku as $value) {
+                $modelTrxStokBahan = TblTransaksiStokBahanBaku::find();
+
+                $sumCurrentStcok = $modelTrxStokBahan
+                    ->where(['IN', 'id_transaksi_stok', $iDs])
+                    ->andWhere(['id_bahan_baku' => $value->id_bahan_baku])
+                    ->sum('quantity');
+
+
+                if ($sumCurrentStcok < $value->quantity) {
+                    throw new \Exception('Stock Tidak Cukup Harap Periksa Stock');
+                }
+                $newStock = $modelTrxStokBahan->where([
+                    'id_transaksi_stok' => $idNewTrx,
+                    'id_bahan_baku' => $value->id_bahan_baku
+                ])->one();
+
+                if (!$newStock) {
+                    $newStock = new TblTransaksiStokBahanBaku();
+                    $newStock->id_transaksi_stok = $idNewTrx;
+                    $newStock->quantity -= $value->quantity;
+                    $newStock->id_bahan_baku = $value->id_bahan_baku;
+                    // echo "<pre>";
+                    // print_r($newStock->quantity);
+                    // echo "</pre>";
+                    // exit();
+                } else {
+                    $quantityCurrent = $newStock->quantity;
+                    $newStock->quantity = $quantityCurrent - $value->quantity;
+                }
+
+                if (!$newStock->save()) {
+                    throw new Exception('Failed save stock: ' . print_r($newStock->errors, true));
+                }
+            }
+            return true;
+        }
+        throw new Exception('Failed read trycatch ');
     }
     public function afterSave($insert, $changedAttributes)
     {

@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\TblMeja;
 use app\models\TblPemesanan;
 use app\models\TblPemesananDetail;
+use app\models\TblTransaksiStok;
 use app\models\UploadedFiledb;
 use app\models\UploadForm;
 use DateTime;
@@ -218,6 +219,7 @@ class OrderController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
 
+
         try {
             $rawData = $request->getRawBody();
             $data = json_decode($rawData, true);
@@ -228,7 +230,11 @@ class OrderController extends Controller
             if (!$model) {
                 throw new \Exception('Data Not Found');
             }
-            $model->restokBahan($listBahanBaku, $status);
+            $model->restokBahan($listBahanBaku);
+            // echo "<pre>";
+            // print_r($model->restokBahan($listBahanBaku, $newTrx));
+            // echo "</pre>";
+            // exit();
             TblPemesananDetail::updateAll(['status' => $status], ['id' => $idOrderDetail]);
             if ($model->isAllChange($status)) {
                 $model->status = $status;
