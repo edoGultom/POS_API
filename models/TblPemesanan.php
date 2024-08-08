@@ -69,7 +69,7 @@ class TblPemesanan extends \yii\db\ActiveRecord
     {
         $trxstok = TblTransaksiStok::findOne(['tipe' => 'Masuk', 'tanggal' => date("Y-m-d")]);
         if (!$trxstok) {
-            throw new \Exception('Data Trx Not Found');
+            throw new \Exception('Data Stok Tidak Ditemukan');
         }
         $transaction = Yii::$app->db->beginTransaction();
         try {
@@ -81,7 +81,7 @@ class TblPemesanan extends \yii\db\ActiveRecord
             $newTrx->tipe = 'Keluar';
             $newTrx->tanggal = date('Y-m-d');
             if (!$newTrx->save()) {
-                throw new Exception('Failed save trx stock: ' . print_r($newTrx->errors, true));
+                throw new Exception('Gagal Simpan Stok: ' . print_r($newTrx->errors, true));
             }
 
             $bahanBaku = (array) $listBahanBaku;

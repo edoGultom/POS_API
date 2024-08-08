@@ -46,6 +46,8 @@ class ReportController extends Controller
                 'actions' => [
                     'by-date-range'  => ['POST'],
                     'by-date'  => ['POST'],
+                    'penjualan-by-date-range'  => ['POST'],
+                    'penjuakan-by-date'  => ['POST'],
                 ],
             ],
         ]);
@@ -117,6 +119,62 @@ class ReportController extends Controller
         )->queryAll();
         return array_values($model);
     }
+    protected function findPenjualanByDate($date)
+    {
+        $model = Yii::$app->db->createCommand(
+            "
+            SELECT 
+                DATE(tp.waktu) AS tanggal,
+                tm.nama AS menu,
+                tpd.temperatur as temperatur,
+                tm.harga as harga,
+                SUM(tpd.quantity) AS qty,
+                SUM(tpd.total) AS total
+            FROM 
+                tbl_pemesanan_detail tpd
+            JOIN 
+                tbl_pemesanan tp ON tpd.id_pemesanan = tp.id
+            JOIN 
+                tbl_menu tm ON tpd.id_menu = tm.id
+            WHERE 
+                tp.status = 'paid' -- Menghitung hanya pesanan yang sudah dibayar
+            AND
+                DATE(tp.waktu) ='$date' 
+            GROUP BY 
+                DATE(tp.waktu), tm.nama
+            ORDER BY 
+                tanggal, menu;"
+        )->queryAll();
+        return array_values($model);
+    }
+    protected function findPenjualanByDateMax($date)
+    {
+        $model = Yii::$app->db->createCommand(
+            "
+            SELECT 
+                DATE(tp.waktu) AS tanggal,
+                tm.nama AS menu,
+                tpd.temperatur as temperatur,
+                tm.harga as harga,
+                SUM(tpd.quantity) AS qty,
+                SUM(tpd.total) AS total
+            FROM 
+                tbl_pemesanan_detail tpd
+            JOIN 
+                tbl_pemesanan tp ON tpd.id_pemesanan = tp.id
+            JOIN 
+                tbl_menu tm ON tpd.id_menu = tm.id
+            WHERE 
+                tp.status = 'paid' -- Menghitung hanya pesanan yang sudah dibayar
+            AND
+                DATE(tp.waktu) <='$date' 
+            GROUP BY 
+                DATE(tp.waktu), tm.nama
+            ORDER BY 
+                tanggal, menu;"
+        )->queryAll();
+        return array_values($model);
+    }
     protected function findAllModel()
     {
         $model = TblMenu::find()->all();
@@ -163,6 +221,69 @@ class ReportController extends Controller
         $data = $request->bodyParams; // Get the body of the request
         $date = $data['date'];
         $model = $this->findByDate($date);
+
+        $transaction = $connection->beginTransaction();
+        try {
+            if ($model) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $model;
+                $res['message'] = 'Berhasil mengambil data!';
+            } else {
+                $res['status'] = true;
+                $res['message'] = 'Data Kosong';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionPenjualanByDateRange()
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $request = Yii::$app->request;
+        $data = $request->bodyParams; // Get the body of the request
+        $dateStart = $data['start'];
+        $dateEnd = $data['end'];
+        $model = $this->findByDateRange($dateStart, $dateEnd);
+
+        $transaction = $connection->beginTransaction();
+        try {
+            if ($model) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $model;
+                $res['message'] = 'Berhasil mengambil data!';
+            } else {
+                $res['status'] = true;
+                $res['message'] = 'Data Kosong';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionPenjualanByDate()
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $request = Yii::$app->request;
+        $data = $request->bodyParams; // Get the body of the request
+        $date = $data['date'];
+        $model = $this->findPenjualanByDate($date);
+
+        if ($data >= date('Y-m-d')) {
+            $model = $this->findPenjualanByDateMax($date);
+        }
 
         $transaction = $connection->beginTransaction();
         try {
