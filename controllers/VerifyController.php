@@ -86,7 +86,7 @@ class VerifyController extends Controller
             $message = $pembayaran->pemesanan->status ?? '';
         }
         try {
-            if ($pembayaran) {
+            if ($pembayaran && $pembayaran->waktu_pembayaran != null) {
                 return [
                     'status' => true,
                     'message' => $message,
