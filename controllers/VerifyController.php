@@ -36,21 +36,23 @@ class VerifyController extends Controller
                 'message' => 'invalid signature'
             ];
         }
+        $tblPembayaran = TblPembayaran::findOne(['id_transaksi_qris' => $trxId]);
+        $pemesanan = TblPemesanan::findOne(['id' => $tblPembayaran->id_pemesanan]);
+
         $status = 'pending payment';
         $satle = null;
         if ($body['transaction_status'] == 'settlement') {
             $status = 'paid';
+            $tblPembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
             $satle =  $body['settlement_time'];
         } else if ($body['transaction_status'] == 'expired') {
             $status = 'expired payment';
         } else if ($body['transaction_status'] == 'cancel') {
             $status = 'canceled payment';
         }
-        $tblPembayaran = TblPembayaran::findOne(['id_transaksi_qris' => $trxId]);
+        $pemesanan->status = $status;
+
         if ($tblPembayaran) {
-            $pemesanan = TblPemesanan::findOne(['id' => $tblPembayaran->id_pemesanan]);
-            $pemesanan->status = $status;
-            $tblPembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
             if (!$tblPembayaran->save()) {
                 throw new Exception('Failed save Pembayara');
             }
@@ -79,11 +81,15 @@ class VerifyController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         $pembayaran = TblPembayaran::findOne(['id_transaksi_qris' => $idTrx]);
+        $message = 'Pending Payment';
+        if ($pembayaran && $pembayaran->waktu_pembayaran != null) {
+            $message = $pembayaran->pemesanan->status ?? '';
+        }
         try {
             if ($pembayaran) {
                 return [
                     'status' => true,
-                    'message' => 'Berhasil melakukan pembayaran',
+                    'message' => $message,
                 ];
             } else {
                 return [

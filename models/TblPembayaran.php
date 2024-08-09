@@ -33,4 +33,21 @@ class TblPembayaran extends \yii\db\ActiveRecord
             ['waktu_pembayaran', 'safe'],
         ];
     }
+    public function fields()
+    {
+        $fields = parent::fields();
+        // Add extra field
+        $fields['detail']  = function ($model) {
+            return $this->pemesananDetail ?? [];
+        };
+        return $fields;
+    }
+    public function getPemesananDetail()
+    {
+        return $this->hasMany(TblPemesananDetail::class, ['id_pemesanan' => 'id_pemesanan'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getPemesanan()
+    {
+        return $this->hasOne(TblPemesanan::class, ['id' => 'id_pemesanan'])->orderBy(['id' => SORT_DESC]);
+    }
 }
