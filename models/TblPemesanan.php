@@ -113,8 +113,9 @@ class TblPemesanan extends \yii\db\ActiveRecord
 
 
                 if ($sumCurrentStcok < $value->quantity) {
-                    throw new \Exception('Stock Tidak Cukup Harap Periksa Stock');
+                    throw new \Exception('Stock Tidak Cukup! Harap lapor admin');
                 }
+
                 $newStock = $modelTrxStokBahan->where([
                     'id_transaksi_stok' => $idNewTrx,
                     'id_bahan_baku' => $value->id_bahan_baku
