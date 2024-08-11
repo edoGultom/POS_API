@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\TblMeja;
 use app\models\TblPembayaran;
 use app\models\TblPemesanan;
 use app\models\TblPemesananDetail;
@@ -126,6 +127,7 @@ class PembayaranController extends Controller
                 if (!$pemesanan->save()) {
                     throw new Exception('Data Not found');
                 }
+                TblMeja::updateAll(['status' => 'Available'], ['id' => $pemesanan->id_meja]);
                 TblPemesananDetail::updateAll(['status' => 'paid'], ['id_pemesanan' => $idPemesanan]);
 
                 $transaction->commit();
