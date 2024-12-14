@@ -69,9 +69,9 @@ class MidtransNotification extends Component
             'payment_type' => 'qris',
             'item_details' => $itemDetails,
             'customer_details' => $customerDetails,
-            // 'qris' => array(
-            //     'acquirer' => 'ovo'
-            // ),
+            'qris' => array(
+                'acquirer' => 'gopay'
+            ),
             'enabled_payments' => array('other_qris')
         );
 
