@@ -2,7 +2,8 @@
 
 namespace app\controllers;
 
-use app\models\TblKategoriBarang;
+use app\models\TblKategori;
+use app\models\TblSubKategori;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\rest\Controller;
@@ -14,7 +15,7 @@ use filsh\yii2\oauth2server\filters\auth\CompositeAuth;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 
-class KategoriBarangController extends Controller
+class KategoriController extends Controller
 {
     public $pesan = '';
     public $data = '';
@@ -42,6 +43,7 @@ class KategoriBarangController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'index'  => ['GET'],
+                    'sub'  => ['GET'],
                     'add'  => ['POST'],
                     'update'  => ['PUT'],
                     'delete'  => ['DELETE'],
@@ -51,7 +53,7 @@ class KategoriBarangController extends Controller
     }
     protected function findModel($id)
     {
-        $model = TblKategoriBarang::findOne($id);
+        $model = TblKategori::findOne($id);
         if ($model !== null) {
             return $model;
         }
@@ -59,7 +61,23 @@ class KategoriBarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblKategoriBarang::find()->all();
+        $model = TblKategori::find()->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    protected function findAllModelSubById($id)
+    {
+        $model = TblSubKategori::find()->where(['id_kategori' => $id])->all();
+        if (count($model) > 0) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data Tidak Ditemukan.');
+    }
+    protected function findAllModelSub()
+    {
+        $model = TblSubKategori::find()->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -87,6 +105,50 @@ class KategoriBarangController extends Controller
         }
         return $res;
     }
+    public function actionSub()
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $model = $this->findAllModelSub();
+            if ($model) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $model;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
+    public function actionSubById($id)
+    {
+        $res = [];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $model = $this->findAllModelSubById($id);
+            if ($model) {
+                $transaction->commit();
+                $res['status'] = true;
+                $res['data'] = $model;
+                $res['message'] = 'Berhasil mengambil data!';
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+        return $res;
+    }
     public function actionAdd()
     {
         $request = Yii::$app->request;
@@ -95,7 +157,7 @@ class KategoriBarangController extends Controller
         $transaction = $connection->beginTransaction();
 
         try {
-            $model = new TblKategoriBarang();
+            $model = new TblKategori();
             $data = $request->bodyParams; // Get the body of the request
             $model->load($data, '');
             if ($model->validate() &&  $model->save()) {

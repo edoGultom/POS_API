@@ -3,7 +3,9 @@
 namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
+use yii\behaviors\BlameableBehavior;
 use Yii;
+use yii\db\Exception;
 
 /**
  * This is the model class for table "partai".
@@ -22,15 +24,14 @@ class TblPembayaran extends \yii\db\ActiveRecord
     {
         return 'tbl_pembayaran';
     }
-    /**
-     * {@inheritdoc}
-     */
+
     public function rules()
     {
         return [
-            [['id_pemesanan', 'jumlah', 'jumlah_diberikan', 'jumlah_kembalian', 'id_kasir'], 'integer'],
-            [['tipe_pembayaran', 'id_transaksi_qris', 'link_qris'], 'string'],
-            ['waktu_pembayaran', 'safe'],
+            [['id_penjualan', 'jumlah', 'jumlah_diberikan', 'jumlah_kembalian'], 'integer'],
+            [['payment_method', 'payment_gateway', 'payment_status'], 'string', 'max' => 100],
+            [['tanggal_pembayaran'], 'safe'],
+            [['id_transaksi', 'link_qris'], 'string'],
         ];
     }
     public function fields()
@@ -38,16 +39,12 @@ class TblPembayaran extends \yii\db\ActiveRecord
         $fields = parent::fields();
         // Add extra field
         $fields['detail']  = function ($model) {
-            return $this->pemesananDetail ?? [];
+            return $this->penjualan->penjualanBarang ?? [];
         };
         return $fields;
     }
-    public function getPemesananDetail()
+    public function getPenjualan()
     {
-        return $this->hasMany(TblPemesananDetail::class, ['id_pemesanan' => 'id_pemesanan'])->orderBy(['id' => SORT_DESC]);
-    }
-    public function getPemesanan()
-    {
-        return $this->hasOne(TblPemesanan::class, ['id' => 'id_pemesanan'])->orderBy(['id' => SORT_DESC]);
+        return $this->hasOne(TblPenjualan::class, ['id' => 'id_penjualan'])->orderBy(['id' => SORT_DESC]);
     }
 }

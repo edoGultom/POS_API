@@ -65,7 +65,7 @@ class UploadForm extends Model
             return false;
         }
     }
-    public function uploadFileMenu($id, $type)
+    public function uploadFileMenu($id)
     {
         if (!empty($this->imageFilesMenu)) {
             // return $this->imageFilesMenu;
@@ -100,14 +100,8 @@ class UploadForm extends Model
                         array_push($arrIdFile, $fileDb->filename);
                     }
                 }
-                // $pengaduan = TblBarang::findOne(['id' => $id]);
-                // $pengaduan->path =  implode(', ', $arrIdFile);
-                // $pengaduan->type =  $type;
-                // if ($pengaduan->save()) {
                 $transaction->commit();
                 return implode(', ', $arrIdFile);
-                // }
-                // return  $pengaduan->getErrors();
             } catch (\Exception $e) {
                 $transaction->rollBack();
                 return $e->getMessage();

@@ -38,30 +38,33 @@ class MidtransNotification extends Component
     private function generateItemDetails($model)
     {
         $itemDetails = [];
-        foreach ($model->getPenjualanBarang()->all() as $val) {
+        foreach ($model as $val) {
             $itemDetails[] = [
                 'id' => $val->id,
                 'price' => $val->harga,
-                'quantity' => $val->qty,
-                'name' => $val->barang->nama_barang ?? '-',
+                'quantity' => $val->quantity,
+                'name' => $val->menu['nama']
             ];
         }
 
         return $itemDetails;
     }
 
-    public function checkout($TblPenjualan)
+    public function checkout($orderID, $totalBayar, $tblPembayaran)
     {
-        $itemDetails = $this->generateItemDetails($TblPenjualan);
+        $itemDetails = $this->generateItemDetails($tblPembayaran);
+        // echo "<pre>";
+        // print_r($itemDetails);
+        // echo "</pre>";
+        // exit();
         $customerDetails = $this->generateCustomerDetails();
-
         \Midtrans\Config::$isProduction = $this->isProduction;
         \Midtrans\Config::$serverKey = $this->serverKey;
 
         $params = array(
             'transaction_details' => array(
-                'order_id' => $TblPenjualan->id,
-                'gross_amount' => $TblPenjualan->total_transaksi,
+                'order_id' => 'Order-IDS-' . date('Y-m-d h:i:s') . '-' . $orderID,
+                'gross_amount' => $totalBayar,
             ),
             'payment_type' => 'qris',
             'item_details' => $itemDetails,

@@ -2,7 +2,10 @@
 
 namespace app\controllers;
 
+use app\models\TblMeja;
 use app\models\TblPembayaran;
+use app\models\TblPemesanan;
+use app\models\TblPemesananDetail;
 use app\models\TblPenjualan;
 use yii\rest\Controller;
 use yii\web\Response;
@@ -21,36 +24,45 @@ class VerifyController extends Controller
     {
         $request = Yii::$app->request;
         $body = $request->bodyParams; // Get the body of the request
+        $trxId = $body['transaction_id'];
         $orderId = $body['order_id'];
         $statusCode = $body['status_code'];
         $grossAmount = $body['gross_amount'];
-        $serverKey = 'SB-Mid-server-vb9mGwshjOGUYK5IV8M6peGo';
+        // $serverKey = 'SB-Mid-server-oi_jLfTtdDgLSm9bdV4FAfEA';
+        $serverKey=Yii::$app->midtrans->serverKey;
         $signature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-
         if ($signature !== $body['signature_key']) {
             return [
                 'status' => false,
                 'message' => 'invalid signature'
             ];
         }
-        $status = 'PENDING';
+        $tblPembayaran = TblPembayaran::findOne(['id_transaksi_qris' => $trxId]);
+        $pemesanan = TblPemesanan::findOne(['id' => $tblPembayaran->id_pemesanan]);
+
+        $status = 'pending payment';
         $satle = null;
         if ($body['transaction_status'] == 'settlement') {
-            $status = 'PAID';
+            $status = 'paid';
+            $tblPembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
             $satle =  $body['settlement_time'];
         } else if ($body['transaction_status'] == 'expired') {
-            $status = 'EXPIRED';
+            $status = 'expired payment';
         } else if ($body['transaction_status'] == 'cancel') {
-            $status = 'CANCELED';
+            $status = 'canceled payment';
         }
-        TblPenjualan::updateAll([
-            'status_pembayaran' => $status,
-        ], ['id' => intval($orderId)]);
-        TblPembayaran::updateAll([
-            'payment_status' => $status,
-            'tanggal_pembayaran' => $satle
-        ], ['id_penjualan' => intval($orderId)]);
+        $pemesanan->status = $status;
 
+        if ($tblPembayaran) {
+            if (!$tblPembayaran->save()) {
+                throw new Exception('Failed save Pembayara');
+            }
+            if (!$pemesanan->save()) {
+                throw new Exception('Failed update pemesanan');
+            }
+            TblMeja::updateAll(['status' => 'Available'], ['id' => $pemesanan->id_meja]);
+            TblPemesananDetail::updateAll(['status' => $status], ['id_pemesanan' => $tblPembayaran->id_pemesanan]);
+        }
         return [
             'status' => true,
             'message' => 'Success Update Payment'
@@ -64,17 +76,21 @@ class VerifyController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
-    public function actionIsfinish($orderId)
+    public function actionIsfinish($idTrx)
     {
         $request = Yii::$app->request;
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
-        $pembayaran = TblPembayaran::findOne(['id_penjualan' => $orderId]);
+        $pembayaran = TblPembayaran::findOne(['id_transaksi_qris' => $idTrx]);
+        $message = 'Pending Payment';
+        if ($pembayaran && $pembayaran->waktu_pembayaran != null) {
+            $message = $pembayaran->pemesanan->status ?? '';
+        }
         try {
-            if ($pembayaran) {
+            if ($pembayaran && $pembayaran->waktu_pembayaran != null) {
                 return [
                     'status' => true,
-                    'message' => $pembayaran->payment_status,
+                    'message' => $message,
                 ];
             } else {
                 return [

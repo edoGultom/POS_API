@@ -2,7 +2,10 @@
 
 namespace app\controllers;
 
+use app\models\TblMeja;
 use app\models\TblPembayaran;
+use app\models\TblPemesanan;
+use app\models\TblPemesananDetail;
 use app\models\TblPenjualan;
 use app\models\TblPenjualanBarang;
 use Yii;
@@ -68,60 +71,13 @@ class PembayaranController extends Controller
         }
         throw new NotFoundHttpException('Data Tidak Ditemukan.');
     }
-    private function savePenjualan($data, $idPenjualan)
-    {
-        $connection = Yii::$app->db;
-        $transaction = $connection->beginTransaction();
-        try {
-            foreach ($data as $value) {
-                try {
-                    $model = new TblPenjualanBarang();
-                    $model->id_penjualan = $idPenjualan;
-                    $model->id_barang = $value['id'];
-                    $model->qty = $value['qty'];
-                    $model->temperatur = $value['temperatur'];
-                    $model->harga = $value['harga'];
-                    $model->total = $value['totalHarga'];
-                    try {
-                        if (!$model->save()) {
-                            return [
-                                'status' => false,
-                                'message' => "Failed to save model for data: " . $model->getErrors(),
-                            ];
-                        }
-                    } catch (Exception $e) {
-                        return [
-                            'status' => false,
-                            'message' => "Exception occurred while saving model for with error: " . $e->getMessage(),
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    $transaction->rollBack();
-                    return [
-                        'status' => false,
-                        'message' => "Failed " . $e->getMessage(),
-                    ];
-                }
-            }
-            $transaction->commit();
-            return [
-                'status' => true,
-                'message' => "Successfully saved ",
-            ];
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            return [
-                'status' => false,
-                'message' => "Failed " . $e->getMessage(),
-            ];
-        }
-    }
 
     public function actionAdd()
     {
         $request = Yii::$app->request;
         $body = $request->bodyParams; // Get the body of the request
-        $data = $body['CartList'];
+        $cartList = $body['CartList'];
+        $idPemesanan = $body['id_pemesanan'];
         $metode_pembayaran = $body['metode_pembayaran'];
         $totalBayar = $body['totalBayar'];
         $status = $body['status'];
@@ -129,46 +85,28 @@ class PembayaranController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $model = new TblPenjualan();
-            $model->id_user = Yii::$app->user->identity->id;
-            $model->total_transaksi = $totalBayar;
-            $model->status_pembayaran = $status;
-            if ($metode_pembayaran === 'qris') {
-                $model->payment_gateway = 'midtrans';
-            }
-            if (!$model->save()) {
-                $transaction->rollBack();
-                throw new Exception('Failed to save penjualan: ');
-            }
-            $res = $this->savePenjualan($data, $model->id);
-            if (!$res['status']) {
-                $transaction->rollBack();
-                throw new Exception('Failed to save penjualan barang: ');
-            }
-            // echo "<pre>";
-            // print_r($res);
-            // echo "</pre>";
-            // exit();
-            //    PEMMBAYARAN MIDTRANS
             $pembayaran = new TblPembayaran();
-            $pembayaran->id_penjualan = $model->id;
-            $pembayaran->payment_method = strtoupper($metode_pembayaran);
+            $pembayaran->id_pemesanan = $idPemesanan;
             $pembayaran->jumlah = $totalBayar;
-            $pembayaran->tanggal_pembayaran = date('Y-m-d H:i:s');
-            $pembayaran->payment_status = $status;
+            $pembayaran->tipe_pembayaran = $metode_pembayaran;
+            // $pembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
+            $pembayaran->id_kasir = Yii::$app->user->identity->id;
+
             if ($metode_pembayaran === 'qris') {
-                $midtransResp = Yii::$app->midtrans->checkout($model);
-                // END PEMBAYARA MIDTRANS
+                $dataArr = (array) $cartList;
+                $dataArr = array_map(function ($item) {
+                    return (object) $item;
+                }, $dataArr);
+                $midtransResp = Yii::$app->midtrans->checkout($idPemesanan, $totalBayar, $dataArr);
                 if ($midtransResp->status_code == '201') {
-                    $pembayaran->payment_gateway = 'midtrans';
-                    $pembayaran->id_transaksi = $midtransResp->transaction_id;
+                    $pembayaran->id_transaksi_qris = $midtransResp->transaction_id;
                     $actions = $midtransResp->actions[0];
-                    // return $actions->url;
                     $pembayaran->link_qris = $actions->url;
                     if (!$pembayaran->save()) {
                         $transaction->rollBack();
                         throw new Exception('Failed to save pembayaran ');
                     }
+
                     $transaction->commit();
                     return [
                         'status' => true,
@@ -177,17 +115,25 @@ class PembayaranController extends Controller
                     ];
                 }
             } else {
-                $cash = $body['cash'];
-                $pembayaran->jumlah_diberikan = $cash['jumlah_diberikan'];
-                $pembayaran->jumlah_kembalian = $cash['jumlah_kembalian'];
+                $cash = (object)$body['cash'];
+                $pembayaran->jumlah_diberikan = $cash->jumlah_diberikan;
+                $pembayaran->jumlah_kembalian = $cash->jumlah_kembalian;
                 if (!$pembayaran->save()) {
                     $transaction->rollBack();
                     throw new Exception('Failed to save pembayaran ');
                 }
+                $pemesanan = TblPemesanan::findOne(['id' => $idPemesanan]);
+                $pemesanan->status = 'paid';
+                if (!$pemesanan->save()) {
+                    throw new Exception('Data Not found');
+                }
+                TblMeja::updateAll(['status' => 'Available'], ['id' => $pemesanan->id_meja]);
+                TblPemesananDetail::updateAll(['status' => 'paid'], ['id_pemesanan' => $idPemesanan]);
+
                 $transaction->commit();
                 return [
                     'status' => true,
-                    'message' => "Successfully savedss ",
+                    'message' => "Successfully saved ",
                     'cash' => $pembayaran
                 ];
             }

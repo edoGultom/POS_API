@@ -17,7 +17,7 @@ use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 use yii\web\UploadedFile;
 
-class BarangController extends Controller
+class MenuController extends Controller
 {
     public $pesan = '';
     public $data = '';
@@ -68,7 +68,7 @@ class BarangController extends Controller
     }
     protected function findAllModel()
     {
-        $model = TblMenu::find()->where(['>', 'stok', 1])->all();
+        $model = TblMenu::find()->all();
         if (count($model) > 0) {
             return $model;
         }
@@ -80,11 +80,11 @@ class BarangController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $barang = $this->findAllModel();
-            if ($barang) {
+            $menu = $this->findAllModel();
+            if ($menu) {
                 $transaction->commit();
                 $res['status'] = true;
-                $res['data'] = $barang;
+                $res['data'] = $menu;
                 $res['message'] = 'Berhasil mengambil data!';
             }
         } catch (\Exception $e) {
@@ -96,10 +96,6 @@ class BarangController extends Controller
         }
         return $res;
     }
-    public function actionDetail($id)
-    {
-        return 'Example!';
-    }
     public function actionAdd()
     {
         $request = Yii::$app->request;
@@ -109,31 +105,30 @@ class BarangController extends Controller
         $files = UploadedFile::getInstancesByName("file");
 
         try {
-            $barang = new TblMenu();
+            $menu = new TblMenu();
             $data = $request->bodyParams; // Get the body of the request
-            $barang->load($data, '');
-            if ($barang->validate() &&  $barang->save()) {
+            $menu->load($data, '');
+            if ($menu->validate() &&  $menu->save()) {
                 if (!empty($files)) {
-
                     $upload = new UploadForm();
                     $upload->imageFilesMenu = $files;
-                    $resp = $upload->uploadFileMenu($barang->id, $barang->type);
+                    $resp = $upload->uploadFileMenu($menu->id);
                     // return $resp;
                     if (!$resp) {
                         $this->status = false;
                         $this->pesan = $resp;
                     }
-                    $barang->path = $resp;
-                    if (!$barang->save()) {
+                    $menu->path = $resp;
+                    if (!$menu->save()) {
                         return [
                             'status' => false,
-                            'message' => $barang->getErrors(),
+                            'message' => $menu->getErrors(),
                         ];
                     }
                     $transaction->commit();
                     $res['status'] = true;
-                    $res['message'] = 'Berhasil menambah datsa!';
-                    $res['data'] =  $this->findModel($barang->id);
+                    $res['message'] = 'Berhasil menambah data!';
+                    $res['data'] =  $this->findModel($menu->id);
                 } else {
                     $res['status'] = false;
                     $res['pesan'] = 'file kosong!';
@@ -141,8 +136,8 @@ class BarangController extends Controller
             } else {
                 return [
                     'status' => false,
-                    // 'message' => $barang->getRequiredAttributes()
-                    'message' => $barang->getErrors(),
+                    // 'message' => $menu->getRequiredAttributes()
+                    'message' => $menu->getErrors(),
                 ];
             }
         } catch (\Exception $e) {
@@ -158,42 +153,29 @@ class BarangController extends Controller
     {
         $res = [];
         $connection = Yii::$app->db;
-        $request = Yii::$app->request;
         $transaction = $connection->beginTransaction();
         $data =  Yii::$app->request->getBodyParams();
         $files = UploadedFile::getInstancesByName("file");
         try {
-            $barang =  $this->findModel($id);
-            $currentStok = $barang->stok;
-            if ($barang) {
-                $barang->setAttributes($data); // Set the attributes manually
-                if ($data['stok'] > $currentStok) {
-                    $barang->type = 'addition';
-                    $resStok = $barang->getNewStok();
-
-                    if (!$resStok) {
-                        return [
-                            'status' => false,
-                            'message' => $resStok,
-                        ];
-                    }
-                }
-                if ($barang->validate() && $barang->save()) {
+            $menu =  $this->findModel($id);;
+            if ($menu) {
+                $menu->setAttributes($data); // Set the attributes manually
+                if ($menu->validate() && $menu->save()) {
                     if (!empty($files)) {
-                        UploadedFiledb::find()->where(['filename' =>  $barang->path])->one()->delete();
-                        unlink(Yii::getAlias('@' . $barang->path));
+                        UploadedFiledb::find()->where(['filename' =>  $menu->path])->one()->delete();
+                        unlink(Yii::getAlias('@' . $menu->path));
                         $upload = new UploadForm();
                         $upload->imageFilesMenu = $files;
-                        $resp = $upload->uploadFileMenu($barang->id, $barang->type);
+                        $resp = $upload->uploadFileMenu($menu->id);
                         if (!$resp) {
                             $this->status = false;
                             $this->pesan = $resp;
                         }
-                        $barang->path = $resp;
-                        if (!$barang->save()) {
+                        $menu->path = $resp;
+                        if (!$menu->save()) {
                             return [
                                 'status' => false,
-                                'message' => $barang->getErrors(),
+                                'message' => $menu->getErrors(),
                             ];
                         }
                     }
@@ -204,7 +186,7 @@ class BarangController extends Controller
                 } else {
                     return [
                         'status' => false,
-                        'message' => $barang->getErrors(),
+                        'message' => $menu->getErrors(),
                     ];
                 }
             }
@@ -222,10 +204,10 @@ class BarangController extends Controller
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $barang =  $this->findModel($id);
-            UploadedFiledb::find()->where(['filename' =>  $barang->path])->one()->delete();
-            unlink(Yii::getAlias('@' . $barang->path));
-            if ($barang->delete()) {
+            $menu =  $this->findModel($id);
+            UploadedFiledb::find()->where(['filename' =>  $menu->path])->one()->delete();
+            unlink(Yii::getAlias('@' . $menu->path));
+            if ($menu->delete()) {
                 $res['status'] = true;
                 $res['message'] = 'Berhasil menghapus data!';
                 // $res['data'] =  $this->findModel($id);

@@ -3,16 +3,16 @@
 use yii\db\Migration;
 
 /**
- * Class m240626_144249_add_column_qris_pembayaran
+ * Class m240723_145103_add_column_profil_user
  */
-class m240626_144249_add_column_qris_pembayaran extends Migration
+class m240723_145103_add_column_profil_user extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->addColumn('{{%tbl_pembayaran}}', 'link_qris', $this->text()->defaultValue(null));
+        $this->addColumn('{{%user}}', 'profile_photo_path', $this->string()->defaultValue(null));
     }
 
     /**
@@ -20,7 +20,7 @@ class m240626_144249_add_column_qris_pembayaran extends Migration
      */
     public function safeDown()
     {
-        echo "m240626_144249_add_column_qris_pembayaran cannot be reverted.\n";
+        echo "m240723_145103_add_column_profil_user cannot be reverted.\n";
 
         return false;
     }
@@ -34,7 +34,7 @@ class m240626_144249_add_column_qris_pembayaran extends Migration
 
     public function down()
     {
-        echo "m240626_144249_add_column_qris_pembayaran cannot be reverted.\n";
+        echo "m240723_145103_add_column_profil_user cannot be reverted.\n";
 
         return false;
     }

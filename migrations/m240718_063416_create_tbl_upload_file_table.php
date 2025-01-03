@@ -3,9 +3,9 @@
 use yii\db\Migration;
 
 /**
- * Class m240606_080409_add_upload_file
+ * Handles the creation of table `{{%tbl_upload_file}}`.
  */
-class m240606_080409_add_upload_file extends Migration
+class m240718_063416_create_tbl_upload_file_table extends Migration
 {
     /**
      * {@inheritdoc}
@@ -30,23 +30,6 @@ class m240606_080409_add_upload_file extends Migration
      */
     public function safeDown()
     {
-        echo "m240606_080409_add_upload_file cannot be reverted.\n";
-
-        return false;
+        $this->dropTable('{{%tbl_upload_file}}');
     }
-
-    /*
-    // Use up()/down() to run migration code without a transaction.
-    public function up()
-    {
-
-    }
-
-    public function down()
-    {
-        echo "m240606_080409_add_upload_file cannot be reverted.\n";
-
-        return false;
-    }
-    */
 }

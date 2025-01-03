@@ -54,7 +54,7 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
             $connection = Yii::$app->db;
             $transaction = $connection->beginTransaction();
             try {
-                $barang = TblBarang::findOne(['id' => $this->id_barang]);
+                $barang = TblMenu::findOne(['id' => $this->id_barang]);
                 if (!$barang) {
                     throw new Exception('Menu not found');
                 }
@@ -74,6 +74,6 @@ class TblPenjualanBarang extends \yii\db\ActiveRecord
     }
     public function getBarang()
     {
-        return $this->hasOne(TblBarang::class, ['id' => 'id_barang']);
+        return $this->hasOne(TblMenu::class, ['id' => 'id_barang']);
     }
 }

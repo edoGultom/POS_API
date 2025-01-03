@@ -5,30 +5,25 @@ use yii\db\Migration;
 /**
  * Handles the creation of table `{{%kategori_barang}}`.
  */
-class m240520_162202_create_kategori_barang_table extends Migration
+class m240520_162002_create_kategori_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%tbl_kategori_barang}}', [
+        $this->createTable('{{%tbl_kategori}}', [
             'id' => $this->primaryKey(),
             'nama_kategori' => $this->string(255),
-            'created_at' => $this->integer(),
-            'updated_at' => $this->integer(),
         ]);
         $this->batchInsert(
-            'tbl_kategori_barang',
+            'tbl_kategori',
             [
                 'nama_kategori',
-                'created_at',
-                'updated_at'
             ],
             [
-                ['Coffee', time(), time()],
-                ['Non Coffee', time(), time()],
-
+                ['Minuman'],
+                ['Makanan'],
             ],
         );
     }

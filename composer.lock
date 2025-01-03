@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2e2964157428687bb792b25411c2b8a3",
+    "content-hash": "b9e42a3799beabf75a4d16851b6a4c43",
     "packages": [
         {
             "name": "bower-asset/inputmask",
@@ -391,6 +391,56 @@
             "time": "2023-06-07T14:49:52+00:00"
         },
         {
+            "name": "immusen/yii2-swoole-websocket",
+            "version": "v1.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/immusen/yii2-swoole-websocket.git",
+                "reference": "223e65fbfef04a78d42924bc3822775616afac3c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/immusen/yii2-swoole-websocket/zipball/223e65fbfef04a78d42924bc3822775616afac3c",
+                "reference": "223e65fbfef04a78d42924bc3822775616afac3c",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "~2.0.0"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "immusen\\websocket\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "immusen",
+                    "email": "immusen@gmail.com"
+                }
+            ],
+            "description": "Websocket server for Yii2 base on swoole 4, Support JSONRPC, Resolve 'method' as a route reflect into controller/action, And support http or redis pub/sub to trigger async task from your web application.",
+            "keywords": [
+                "async",
+                "extension",
+                "pub sub",
+                "redis",
+                "swoole",
+                "websocket",
+                "websocket server",
+                "yii2"
+            ],
+            "support": {
+                "issues": "https://github.com/immusen/yii2-swoole-websocket/issues",
+                "source": "https://github.com/immusen/yii2-swoole-websocket/tree/master"
+            },
+            "time": "2019-03-31T08:29:21+00:00"
+        },
+        {
             "name": "mdmsoft/yii2-admin",
             "version": "2.12",
             "source": {
@@ -559,16 +609,16 @@
         },
         {
             "name": "yiisoft/yii2",
-            "version": "2.0.50",
+            "version": "2.0.51",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-framework.git",
-                "reference": "a90b6638cce84e78ed8f681a5cad4a14c76464b4"
+                "reference": "ea1f112f4dc9a9824e77b788019e2d53325d823c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-framework/zipball/a90b6638cce84e78ed8f681a5cad4a14c76464b4",
-                "reference": "a90b6638cce84e78ed8f681a5cad4a14c76464b4",
+                "url": "https://api.github.com/repos/yiisoft/yii2-framework/zipball/ea1f112f4dc9a9824e77b788019e2d53325d823c",
+                "reference": "ea1f112f4dc9a9824e77b788019e2d53325d823c",
                 "shasum": ""
             },
             "require": {
@@ -677,7 +727,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-30T17:23:31+00:00"
+            "time": "2024-07-18T19:50:00+00:00"
         },
         {
             "name": "yiisoft/yii2-composer",
