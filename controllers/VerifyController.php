@@ -28,7 +28,8 @@ class VerifyController extends Controller
         $orderId = $body['order_id'];
         $statusCode = $body['status_code'];
         $grossAmount = $body['gross_amount'];
-        $serverKey = 'SB-Mid-server-vb9mGwshjOGUYK5IV8M6peGo';
+        // $serverKey = 'SB-Mid-server-oi_jLfTtdDgLSm9bdV4FAfEA';
+        $serverKey=Yii::$app->midtrans->serverKey;
         $signature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
         if ($signature !== $body['signature_key']) {
             return [
