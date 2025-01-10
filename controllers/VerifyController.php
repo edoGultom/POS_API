@@ -91,7 +91,7 @@ class VerifyController extends Controller
                 return [
                     'status' => true,
                     'message' => $message,
-                    'orderDetail'=>pembayaran->getPemesananDetail()->all()
+                    'orderDetail'=>$pembayaran->getPemesananDetail()->all()
                 ];
             } else {
                 return [
