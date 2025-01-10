@@ -4,6 +4,7 @@ namespace app\models;
 
 use yii\behaviors\TimestampBehavior;
 use Yii;
+use app\models\User;
 
 /**
  * This is the model class for table "partai".
@@ -41,7 +42,7 @@ class TblPembayaran extends \yii\db\ActiveRecord
             return $this->pemesananDetail ?? [];
         };
         $fields['kasir']  = function ($model) {
-            return $this->user ?? '';
+            return $this->kasir ?? '';
         };
         return $fields;
     }
@@ -55,8 +56,10 @@ class TblPembayaran extends \yii\db\ActiveRecord
     }
     public function getKasir()
     {
-      return User::findOne([
-            'id' => $this->id_kasir,
-        ]);
+        $model = User::find()->where(['id' => $this->id_kasir])->one();
+        if($model){
+            return $model->name;
+        }
+        return false
     }
 }
