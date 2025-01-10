@@ -55,6 +55,9 @@ class TblPembayaran extends \yii\db\ActiveRecord
     }
     public function getKasir()
     {
-        return $this->hasOne(User::class, ['id' => 'id_kasir']);
+      return User::findOne([
+            'id' => $this->id_kasir,
+        ]);
+
     }
 }
