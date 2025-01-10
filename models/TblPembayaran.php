@@ -40,6 +40,9 @@ class TblPembayaran extends \yii\db\ActiveRecord
         $fields['detail']  = function ($model) {
             return $this->pemesananDetail ?? [];
         };
+        $fields['kasir']  = function ($model) {
+            return $this->user->name ?? [];
+        };
         return $fields;
     }
     public function getPemesananDetail()
@@ -49,5 +52,9 @@ class TblPembayaran extends \yii\db\ActiveRecord
     public function getPemesanan()
     {
         return $this->hasOne(TblPemesanan::class, ['id' => 'id_pemesanan'])->orderBy(['id' => SORT_DESC]);
+    }
+    public function getKasir()
+    {
+        return $this->hasOne(User::class, ['id' => 'id_kasir']);
     }
 }
