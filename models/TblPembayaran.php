@@ -60,6 +60,6 @@ class TblPembayaran extends \yii\db\ActiveRecord
         if($model){
             return $model->name;
         }
-        return false
+        return false;
     }
 }
