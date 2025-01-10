@@ -57,6 +57,6 @@ class TblPembayaran extends \yii\db\ActiveRecord
     {
       return User::findOne([
             'id' => $this->id_kasir,
-        ])->name;
+        ]);
     }
 }
