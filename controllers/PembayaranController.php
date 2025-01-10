@@ -89,7 +89,6 @@ class PembayaranController extends Controller
             $pembayaran->id_pemesanan = $idPemesanan;
             $pembayaran->jumlah = $totalBayar;
             $pembayaran->tipe_pembayaran = $metode_pembayaran;
-            // $pembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
             $pembayaran->id_kasir = Yii::$app->user->identity->id;
 
             if ($metode_pembayaran === 'qris') {
@@ -118,6 +117,7 @@ class PembayaranController extends Controller
                 $cash = (object)$body['cash'];
                 $pembayaran->jumlah_diberikan = $cash->jumlah_diberikan;
                 $pembayaran->jumlah_kembalian = $cash->jumlah_kembalian;
+                $pembayaran->waktu_pembayaran = date('Y-m-d H:i:s');
                 if (!$pembayaran->save()) {
                     $transaction->rollBack();
                     throw new Exception('Failed to save pembayaran ');
