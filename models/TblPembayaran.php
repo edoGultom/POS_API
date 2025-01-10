@@ -41,7 +41,7 @@ class TblPembayaran extends \yii\db\ActiveRecord
             return $this->pemesananDetail ?? [];
         };
         $fields['kasir']  = function ($model) {
-            return $this->user->name ?? '';
+            return $this->user ?? '';
         };
         return $fields;
     }
