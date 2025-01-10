@@ -41,7 +41,7 @@ class TblPembayaran extends \yii\db\ActiveRecord
             return $this->pemesananDetail ?? [];
         };
         $fields['kasir']  = function ($model) {
-            return $this->user->name ?? [];
+            return $this->user->name ?? '';
         };
         return $fields;
     }
@@ -58,6 +58,5 @@ class TblPembayaran extends \yii\db\ActiveRecord
       return User::findOne([
             'id' => $this->id_kasir,
         ])->name;
-
     }
 }
